@@ -1,0 +1,5 @@
+{
+  "extends": [
+    "gitlab>jimsy/renovate"
+  ]
+}

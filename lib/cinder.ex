@@ -1,18 +1,30 @@
 defmodule Cinder do
+  alias Cinder.Dsl
+  import Dsl, only: [dsl: 0]
+
   @moduledoc """
-  Documentation for `Cinder`.
+  The Cinder web application server.
+
+  ## DSL Documentation
+
+  ### Index
+
+  #{Spark.Dsl.Extension.doc_index(dsl())}
+
+  ### Docs
+
+  #{Spark.Dsl.Extension.doc(dsl())}
   """
 
-  @doc """
-  Hello world.
+  use Spark.Dsl, default_extensions: [extensions: [Dsl]]
 
-  ## Examples
+  @type app :: module
 
-      iex> Cinder.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @doc false
+  @spec handle_opts(any) :: Macro.t()
+  def handle_opts(_opts) do
+    quote location: :keep do
+      @persist {:file, __ENV__.file}
+    end
   end
 end

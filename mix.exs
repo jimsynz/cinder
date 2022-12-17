@@ -14,7 +14,9 @@ defmodule Cinder.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases(),
+      preferred_cli_env: [ci: :test]
     ]
   end
 
@@ -37,13 +39,35 @@ defmodule Cinder.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.6", only: ~w[dev test]a},
-      {:doctor, "~> 0.21", only: ~w[dev test]a},
-      {:ex_doc, ">= 0.28.0", only: ~w[dev test]a},
+      {:jason, "~> 1.4"},
+      {:phoenix_pubsub, "~> 2.1"},
+      {:plug, "~> 1.14"},
+      {:plug_cowboy, "~> 2.6"},
+      {:spark, "~> 0.3.1"},
+      {:credo, "~> 1.6", only: ~w[dev test]a, runtime: false},
+      {:doctor, "~> 0.21", only: ~w[dev test]a, runtime: false},
+      {:dialyxir, "~> 1.2", only: ~w[dev test]a, runtime: false},
+      {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false}
     ]
   end
 
+  defp aliases do
+    [
+      ci: [
+        "format --check-formatted",
+        "doctor --full --raise",
+        "credo --strict",
+        "dialyzer",
+        "hex.audit",
+        "test"
+      ]
+      # docs: ["docs", "ash.replace_doc_links"],
+      # test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+    ]
+  end
+
+  defp elixirc_paths(:dev), do: ["lib", "test/support"]
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 end

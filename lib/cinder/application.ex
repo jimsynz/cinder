@@ -1,20 +1,20 @@
 defmodule Cinder.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
 
   @impl true
+  @spec start(any, any) :: {:error, any} | {:ok, pid}
   def start(_type, _args) do
-    children = [
-      # Starts a worker by calling: Cinder.Worker.start_link(arg)
-      # {Cinder.Worker, arg}
-    ]
+    []
+    |> maybe_start_app()
+    |> Supervisor.start_link(strategy: :one_for_one, name: Cinder.Supervisor)
+  end
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Cinder.Supervisor]
-    Supervisor.start_link(children, opts)
+  defp maybe_start_app(children) do
+    case Code.ensure_compiled(Example.App) do
+      {:module, _} -> children ++ [Example.App]
+      _ -> children
+    end
   end
 end

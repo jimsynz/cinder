@@ -2,7 +2,7 @@ defmodule Cinder.MixProject do
   @moduledoc false
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
   @description "An experimental web application server."
 
   def project do

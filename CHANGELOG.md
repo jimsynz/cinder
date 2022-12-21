@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.2.0](https://gitlab.com/jimsy/cinder/compare/v0.1.0...v0.2.0) (2022-12-21)
+
+
+
+
+### Features:
+
+* Cinder.Route: minimally working asynchronous router.
+
 ## [v0.1.0](https://gitlab.com/jimsy/cinder/compare/v0.1.0...v0.1.0) (2022-12-08)
 
 

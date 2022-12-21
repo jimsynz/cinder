@@ -6,3 +6,5 @@ config :git_ops,
   repository_url: "https://gitlab.com/jimsy/cinder",
   manage_mix_version?: true,
   version_tag_prefix: "v"
+
+import_config "#{config_env()}.exs"

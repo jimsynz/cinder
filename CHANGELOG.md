@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.2.1](https://gitlab.com/jimsy/cinder/compare/v0.2.0...v0.2.1) (2022-12-21)
+
+
+
+
+### Improvements:
+
+* router: engines are per request, correctly handle error transitions.
+
 ## [v0.2.0](https://gitlab.com/jimsy/cinder/compare/v0.1.0...v0.2.0) (2022-12-21)
 
 

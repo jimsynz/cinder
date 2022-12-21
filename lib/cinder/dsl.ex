@@ -75,10 +75,10 @@ defmodule Cinder.Dsl do
           name: :engine,
           describe: "Settings related to the Cinder engine",
           schema: [
-            server_idle_timeout: [
+            reconnect_timeout: [
               type: :pos_integer,
-              doc: "Server idle timeout in seconds",
-              default: 300
+              doc: "How long to wait for a second request before shutting down the server",
+              default: 10
             ]
           ]
         }

@@ -3,7 +3,7 @@ defmodule Cinder.Engine.State do
   alias Cinder.{Engine, Engine.State, Route}
 
   defstruct app: nil,
-            session_id: nil,
+            request_id: nil,
             path_info: [],
             params: %{},
             query_params: %{},
@@ -17,7 +17,7 @@ defmodule Cinder.Engine.State do
 
   @type t :: %State{
           app: Cinder.app(),
-          session_id: Engine.session_id(),
+          request_id: Engine.request_id(),
           path_info: [String.t()],
           params: params,
           query_params: %{required(String.t()) => String.t()},

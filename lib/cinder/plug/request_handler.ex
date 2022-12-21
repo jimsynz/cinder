@@ -7,8 +7,6 @@ defmodule Cinder.Plug.RequestHandler do
   @behaviour Plug
   @type opts :: %{required(:app) => Cinder.app(), optional(atom) => any}
 
-  import Plug.Conn
-
   @doc false
   @impl true
   @spec init(keyword) :: opts
@@ -18,19 +16,18 @@ defmodule Cinder.Plug.RequestHandler do
   @impl true
   @spec call(Plug.Conn.t(), opts) :: Plug.Conn.t()
   def call(conn, opts) do
-    session_key = Extension.get_persisted(opts.app, :cinder_session_key)
+    request_key = Extension.get_persisted(opts.app, :cinder_request_key)
 
-    session_id =
-      case get_session(conn, session_key) do
-        nil -> raise "Missing Cinder session ID!"
-        session_id -> session_id
+    request_id =
+      case Map.fetch(conn.private, request_key) do
+        {:ok, request_id} -> request_id
+        :error -> raise "Missing Cinder request ID!"
       end
 
     engine = Extension.get_persisted(opts.app, :cinder_engine)
 
-    engine.start!(session_id)
-    engine.transition_to(session_id, conn.path_info, conn.params)
-
-    send_resp(conn, 200, engine.render_once(session_id))
+    engine.start!(request_id)
+    engine.transition_to(request_id, conn.path_info, conn.params)
+    engine.render_once(request_id, conn)
   end
 end

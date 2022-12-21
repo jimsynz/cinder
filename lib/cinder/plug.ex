@@ -20,7 +20,7 @@ defmodule Cinder.Plug do
          same_site: "Lax"
        ]},
       {:fetch_session, []},
-      {Cinder.Plug.UniqueSession, [app: app]},
+      {Cinder.Plug.RequestId, [app: app]},
       {Plug.Parsers, parsers: [:urlencoded, :multipart, :json], json_decoder: Jason},
       {Cinder.Plug.RequestHandler, [app: app]}
     ]

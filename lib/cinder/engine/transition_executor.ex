@@ -46,8 +46,8 @@ defmodule Cinder.Engine.TransitionExecutor do
       {:inactive, _route} ->
         do_execute_transition(op_stack, current_routes, state)
 
-      {:error, reason} ->
-        raise "Error exiting route: `#{inspect(reason)}`"
+      {:error, route} ->
+        do_execute_transition(op_stack, [route | current_routes], state)
     end
   end
 
@@ -74,13 +74,28 @@ defmodule Cinder.Engine.TransitionExecutor do
       {:active, route} ->
         do_execute_transition(op_stack, [route | current_routes], state)
 
-      {:error, reason} ->
-        raise "Error entering route: `#{inspect(reason)}`"
+      {:error, route} ->
+        do_execute_transition(op_stack, [route | current_routes], state)
     end
   end
 
   defp do_execute_transition([{:enter, module, params} | op_stack], current_routes, state) do
-    {:ok, route} = Route.init(module, session_id: state.session_id)
+    {:ok, route} = Route.init(module, request_id: state.request_id)
     do_execute_transition([{:enter, module, params} | op_stack], [route | current_routes], state)
+  end
+
+  defp do_execute_transition(
+         [{:error, params, module} | op_stack],
+         [route | current_routes],
+         state
+       )
+       when module == route.module do
+    {:error, route} = Route.error(route, params)
+    do_execute_transition(op_stack, [route | current_routes], state)
+  end
+
+  defp do_execute_transition([{:error, params, module} | op_stack], current_routes, state) do
+    {:ok, route} = Route.init(module, request_id: state.request_id)
+    do_execute_transition([{:error, module, params} | op_stack], [route | current_routes], state)
   end
 end

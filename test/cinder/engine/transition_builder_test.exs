@@ -142,4 +142,27 @@ defmodule Cinder.Engine.TransitionBuilderTest do
              ] = state.op_stack
     end
   end
+
+  describe "build_transition_to_error/2" do
+    test "build transition from /posts/123/comments to error" do
+      state =
+        [
+          {%{}, Example.App.Route.App},
+          {%{}, Example.App.Route.Posts},
+          {%{"id" => "123"}, Example.App.Route.Post},
+          {%{}, Example.App.Route.Comments}
+        ]
+        |> build_state()
+        |> build_transition_to_error(%{"reason" => "Please refill Mr Fusion."})
+
+      assert state.status == :transitioning
+
+      assert [
+               {:exit, Example.App.Route.Comments},
+               {:exit, Example.App.Route.Post},
+               {:exit, Example.App.Route.Posts},
+               {:error, %{"reason" => "Please refill Mr Fusion."}, Example.App.Route.App}
+             ] = state.op_stack
+    end
+  end
 end

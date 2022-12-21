@@ -5,14 +5,14 @@ defmodule Cinder.Engine.ServerTest do
   alias Spark.Dsl.Extension
 
   setup do
-    session_id = UniqueId.unique_id()
-    {:ok, pid} = Server.start_link(Example.App, session_id)
-    {:ok, session_id: session_id, pid: pid}
+    request_id = UniqueId.unique_id()
+    {:ok, pid} = Server.start_link(Example.App, request_id)
+    {:ok, request_id: request_id, pid: pid}
   end
 
   describe "init/1" do
-    test "it stores the session id in the server state", %{session_id: session_id, pid: pid} do
-      assert %State{session_id: ^session_id} = GenServer.call(pid, :get_state)
+    test "it stores the session id in the server state", %{request_id: request_id, pid: pid} do
+      assert %State{request_id: ^request_id} = GenServer.call(pid, :get_state)
     end
 
     test "it stores the app in the server state", %{pid: pid} do
@@ -61,7 +61,7 @@ defmodule Cinder.Engine.ServerTest do
       Example.App
       |> Extension.get_persisted(:cinder_engine_pubsub)
       |> PubSub.broadcast(
-        "cinder_engine_server:#{state.session_id}",
+        "cinder_engine_server:#{state.request_id}",
         {:transition_complete, Example.App.Route.Stuck, :active, %{}}
       )
 

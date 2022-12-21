@@ -6,7 +6,7 @@ defmodule TestHelpers do
 
   def build_state(routes, props \\ %{}) do
     %State{
-      session_id: unique_id(),
+      request_id: unique_id(),
       app: Example.App,
       current_routes: build_entered_routes(routes)
     }
@@ -18,7 +18,7 @@ defmodule TestHelpers do
       %Route{
         state: :active,
         params: params,
-        data: %{},
+        data: %{params: params},
         module: module
       }
     end)

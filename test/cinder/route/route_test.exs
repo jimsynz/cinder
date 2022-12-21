@@ -8,7 +8,7 @@ defmodule Cinder.RouteTest do
       assert {:ok, route} = Route.init(Posts, [])
 
       assert route.state == :initial
-      assert route.data == []
+      assert route.data == %{params: nil}
       assert route.module == Posts
     end
   end
@@ -37,7 +37,7 @@ defmodule Cinder.RouteTest do
       {:ok, route} = Route.init(Posts, [])
       {:active, route} = Route.enter(route, %{})
 
-      assert {:ok, nil} = Route.resource(route)
+      assert {:ok, %{}} = Route.resource(route)
     end
   end
 end

@@ -16,12 +16,12 @@ defmodule Cinder.Engine do
 
   import Macros
 
-  @type session_id :: UniqueId.unique_id()
+  @type request_id :: UniqueId.unique_id()
 
-  @callback start(String.t()) :: DynamicSupervisor.on_start_child()
-  @callback start!(String.t()) :: pid | no_return
-  @callback transition_to(String.t(), [String.t()], Route.params()) :: :ok
-  @callback render_once(String.t()) :: String.t()
+  @callback start(request_id) :: DynamicSupervisor.on_start_child()
+  @callback start!(request_id) :: pid | no_return
+  @callback transition_to(request_id, [String.t()], Route.params()) :: :ok
+  @callback render_once(request_id, Plug.Conn.t()) :: String.t()
   @callback __cinder_is__ :: {Cinder.Engine, module}
 
   @spec __using__(keyword) :: Macro.t()
@@ -47,24 +47,24 @@ defmodule Cinder.Engine do
 
       @doc false
       @impl true
-      @spec start(String.t()) :: DynamicSupervisor.on_start_child()
-      def start(session_id), do: Engine.start(unquote(app), session_id)
+      @spec start(Engine.request_id()) :: DynamicSupervisor.on_start_child()
+      def start(request_id), do: Engine.start(unquote(app), request_id)
 
       @doc false
       @impl true
-      @spec start!(String.t()) :: pid | no_return
-      def start!(session_id), do: Engine.start!(unquote(app), session_id)
+      @spec start!(Engine.request_id()) :: pid | no_return
+      def start!(request_id), do: Engine.start!(unquote(app), request_id)
 
       @doc false
       @impl true
-      @spec transition_to(String.t(), [String.t()], Route.params()) :: :ok
-      def transition_to(session_id, path_info, params),
-        do: Engine.transition_to(unquote(app), session_id, path_info, params)
+      @spec transition_to(Engine.request_id(), [String.t()], Route.params()) :: :ok
+      def transition_to(request_id, path_info, params),
+        do: Engine.transition_to(unquote(app), request_id, path_info, params)
 
       @doc false
       @impl true
-      @spec render_once(String.t()) :: String.t()
-      def render_once(session_id), do: Engine.render_once(unquote(app), session_id)
+      @spec render_once(Engine.request_id(), Plug.Conn.t()) :: String.t()
+      def render_once(request_id, conn), do: Engine.render_once(unquote(app), request_id, conn)
 
       @doc false
 
@@ -97,16 +97,16 @@ defmodule Cinder.Engine do
   end
 
   @doc false
-  @spec start(Cinder.app(), String.t()) :: DynamicSupervisor.on_start_child()
-  def start(app, session_id) do
+  @spec start(Cinder.app(), request_id) :: DynamicSupervisor.on_start_child()
+  def start(app, request_id) do
     supervisor = Extension.get_persisted(app, :cinder_engine_supervisor)
-    DynamicSupervisor.start_child(supervisor, {Server, session_id})
+    DynamicSupervisor.start_child(supervisor, {Server, request_id})
   end
 
   @doc false
-  @spec start!(Cinder.app(), String.t()) :: pid | no_return()
-  def start!(app, session_id) do
-    case start(app, session_id) do
+  @spec start!(Cinder.app(), request_id) :: pid | no_return()
+  def start!(app, request_id) do
+    case start(app, request_id) do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
       {:error, reason} -> raise "Unable to start Cinder engine server: #{inspect(reason)}"
@@ -114,14 +114,15 @@ defmodule Cinder.Engine do
   end
 
   @doc false
-  @spec transition_to(Cinder.app(), String.t(), [String.t()], Route.params()) :: :ok
-  def transition_to(app, session_id, ["/" | _] = path_info, params),
-    do: app |> via(session_id) |> GenServer.cast({:transition_to, path_info, params})
+  @spec transition_to(Cinder.app(), request_id, [String.t()], Route.params()) :: :ok
+  def transition_to(app, request_id, ["/" | _] = path_info, params),
+    do: app |> via(request_id) |> GenServer.cast({:transition_to, path_info, params})
 
-  def transition_to(app, session_id, path_info, params),
-    do: transition_to(app, session_id, ["/" | path_info], params)
+  def transition_to(app, request_id, path_info, params),
+    do: transition_to(app, request_id, ["/" | path_info], params)
 
   @doc false
-  @spec render_once(Cinder.app(), String.t()) :: String.t() | no_return
-  def render_once(app, session_id), do: GenServer.call(via(app, session_id), :render_once)
+  @spec render_once(Cinder.app(), request_id, Plug.Conn.t()) :: String.t() | no_return
+  def render_once(app, request_id, conn),
+    do: GenServer.call(via(app, request_id), {:render_once, conn})
 end

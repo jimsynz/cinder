@@ -10,14 +10,14 @@ defmodule Cinder.Route.Matcher do
 
   ## Example
 
-      iex> "/posts/123/comments" |> Path.split() |> Matcher.match(Example.App.__routing_table__())
+      iex> "/posts/123/comments" |> Path.split() |> Matcher.match(Example.App.__cinder_routing_table__())
       {:ok, [{%{}, Example.App.Route.App}, {%{}, Example.App.Route.Posts}, {%{"id" => "123"}, Example.App.Route.Post}, {%{}, Example.App.Route.Comments}]}
 
-      iex> "/fruits/banana" |> Path.split() |> Matcher.match(Example.App.__routing_table__())
+      iex> "/fruits/banana" |> Path.split() |> Matcher.match(Example.App.__cinder_routing_table__())
       {:ok, [{%{}, Example.App.Route.App}, {%{}, nil}, {%{"id" => "banana"}, Example.App.Route.Fruit}]}
 
   """
-  @spec match([String.t()], Route.routing_table()) ::
+  @spec match([String.t()], Route.cinder_routing_table()) ::
           {:ok, [{%{required(String.t()) => String.t()}, Route.route_module()}]} | :error
   def match(segments, routes), do: match(segments, routes, [])
 

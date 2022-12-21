@@ -30,7 +30,15 @@ defmodule Cinder.Plug.Transformer do
 
     dsl_state =
       dsl_state
-      |> Transformer.persist(:cinder_session_key, "#{Macro.underscore(app)}_session_id")
+      |> Transformer.persist(
+        :cinder_request_key,
+        app
+        |> Module.split()
+        |> Enum.map(&Macro.underscore/1)
+        |> Enum.concat(["request_id"])
+        |> Enum.join("_")
+        |> String.to_atom()
+      )
       |> Transformer.persist(:cinder_plug, plug)
       |> Transformer.eval(
         [app: app, plug: plug],

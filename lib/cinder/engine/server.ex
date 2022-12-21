@@ -2,9 +2,10 @@ defmodule Cinder.Engine.Server do
   @moduledoc """
   The main request server.
   """
-  use GenServer
+  use GenServer, restart: :transient
 
   alias Cinder.{
+    Engine,
     Engine.Macros,
     Engine.Server,
     Engine.State,
@@ -14,39 +15,39 @@ defmodule Cinder.Engine.Server do
   }
 
   alias Phoenix.PubSub
+  alias Plug.Conn
   alias Spark.Dsl.Extension
 
   import Macros
   require Logger
 
   @doc false
-  @spec start_link(module, String.t()) :: GenServer.on_start()
-  def start_link(app, session_id),
-    do: GenServer.start_link(Server, [app, session_id], name: via(app, session_id))
+  @spec start_link(module, Engine.request_id()) :: GenServer.on_start()
+  def start_link(app, request_id),
+    do: GenServer.start_link(Server, [app, request_id], name: via(app, request_id))
 
   @impl true
   @spec init(list) :: {:ok, State.t(), pos_integer()}
-  def init([app, session_id]) do
-    timeout =
-      app
-      |> Extension.get_opt([:cinder, :engine], :server_idle_timeout, 300)
-      |> then(&(&1 * 1_000))
-
+  def init([app, request_id]) do
     pubsub = Extension.get_persisted(app, :cinder_engine_pubsub)
+    :ok = PubSub.subscribe(pubsub, "cinder_engine_server:#{request_id}")
 
-    :ok = PubSub.subscribe(pubsub, "cinder_engine_server:#{session_id}")
-
-    {:ok, %State{session_id: session_id, app: app}, timeout}
+    {:ok, %State{request_id: request_id, app: app}, timeout(app)}
   end
 
   @impl true
-  def handle_call(:render_once, _from, state) do
-    {:reply, inspect(state), state}
+  def handle_call({:render_once, conn}, _from, state) do
+    conn =
+      conn
+      |> Conn.put_resp_content_type("text/html")
+      |> Conn.send_resp(200, inspect(state))
+
+    {:reply, conn, state, timeout(state.app)}
   end
 
   def handle_call(:get_state, _from, state), do: {:reply, state, state}
 
-  def handle_call(:session_id, _from, state), do: {:reply, state.session_id, state}
+  def handle_call(:request_id, _from, state), do: {:reply, state.request_id, state}
 
   @impl true
   def handle_cast({:transition_to, path_and_query}, state) when is_binary(path_and_query) do
@@ -65,26 +66,33 @@ defmodule Cinder.Engine.Server do
   def handle_cast({:transition_to, path_info, params}, state) do
     state = %{state | path_info: path_info, params: params}
 
-    state =
-      path_info
-      |> Matcher.match(state.app.__routing_table__())
-      |> case do
-        {:ok, routes} ->
+    path_info
+    |> Matcher.match(state.app.__cinder_routing_table__())
+    |> case do
+      {:ok, routes} ->
+        state =
           state
           |> TransitionBuilder.build_transition_to(routes)
           |> TransitionExecutor.execute_transition()
 
-        :error ->
-          Logger.debug("ignoring a 404")
-          state
-      end
+        {:noreply, state}
 
-    {:noreply, state}
+      :error ->
+        state =
+          state
+          |> TransitionBuilder.build_transition_to_error(%{
+            "reason" => "route not found",
+            "status" => "404"
+          })
+          |> TransitionExecutor.execute_transition()
+
+        {:noreply, state}
+    end
   end
 
   @impl true
   def handle_info(:timeout, state) do
-    Logger.debug("Session #{state.session_id} timeout")
+    Logger.debug("Reconnect timeout: #{inspect(state.request_id)}")
     {:stop, :normal, state}
   end
 
@@ -124,5 +132,11 @@ defmodule Cinder.Engine.Server do
       end)
 
     %{state | current_routes: current_routes}
+  end
+
+  defp timeout(app) do
+    app
+    |> Extension.get_opt([:cinder, :engine], :reconnect_timeout, 10)
+    |> then(&(&1 * 1_000))
   end
 end

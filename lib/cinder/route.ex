@@ -18,7 +18,7 @@ defmodule Cinder.Route do
   @type data :: any
   @type route_module :: module
   @type params :: %{required(String.t()) => String.t()}
-  @type routing_table :: [{Segment.t(), module | nil, routing_table()}]
+  @type cinder_routing_table :: [{Segment.t(), module | nil, cinder_routing_table()}]
 
   @type route_state ::
           :initial
@@ -30,19 +30,21 @@ defmodule Cinder.Route do
 
   @type on_enter :: {:loading, data} | {:active, data} | {:error, data}
   @type on_exit :: {:unloading, data} | {:inactive, data} | {:error, data}
+  @type on_error :: {:error, data}
 
   @callback init(keyword) :: {:ok, data} | {:error, any}
   @callback enter(data, params) :: on_enter()
   @callback exit(data) :: on_exit()
+  @callback error(data, params) :: on_error()
 
   @callback resource(data) :: {:ok, any} | {:error, any}
-  @callback transition_complete(Engine.session_id(), route_state, data) :: :ok | {:error, any}
+  @callback transition_complete(Engine.request_id(), route_state, data) :: :ok | {:error, any}
 
   @doc """
   Initialise a route.
 
   Options are a keyword list of options, currently the only option passed is the
-  `session_id`, which is needed for asynchronous transitions.
+  `request_id`, which is needed for asynchronous transitions.
 
   There may be more options in the future.
   """
@@ -85,6 +87,17 @@ defmodule Cinder.Route do
   end
 
   @doc """
+  Force a route into an error state.
+
+  This is primarily used for the App route when something goes horribly wrong.
+  """
+  @spec error(t, params) :: {:error, t}
+  def error(state, params) do
+    {:error, data} = state.module.error(state.data, params)
+    {:error, %{state | data: data, state: :error, params: params}}
+  end
+
+  @doc """
   Retrieve the route's resource.
   """
   @spec resource(t) :: {:ok, any} | {:error, any}
@@ -105,12 +118,12 @@ defmodule Cinder.Route do
   """
   @spec transition_complete(Cinder.app(), route_module, String.t(), route_state, data()) ::
           :ok | {:error, any}
-  def transition_complete(app, route_module, session_id, state, data) do
+  def transition_complete(app, route_module, request_id, state, data) do
     pubsub = Extension.get_persisted(app, :cinder_engine_pubsub)
 
     PubSub.broadcast(
       pubsub,
-      "cinder_engine_server:#{session_id}",
+      "cinder_engine_server:#{request_id}",
       {:transition_complete, route_module, state, data}
     )
   end
@@ -125,30 +138,42 @@ defmodule Cinder.Route do
       @doc false
       @impl true
       @spec init(keyword) :: {:ok | :error, any}
-      def init(_opts), do: {:ok, []}
+      def init(opts) do
+        data =
+          opts
+          |> Map.new()
+          |> Map.put_new(:params, nil)
+
+        {:ok, data}
+      end
 
       @doc false
       @impl true
       @spec enter(Route.data(), Route.params()) :: Route.on_enter()
-      def enter(data, _params), do: {:active, data}
+      def enter(data, params), do: {:active, %{data | params: params}}
 
       @doc false
       @impl true
       @spec exit(Route.data()) :: Route.on_exit()
-      def exit(data), do: {:inactive, data}
+      def exit(data), do: {:inactive, %{data | params: nil}}
+
+      @doc false
+      @impl true
+      @spec error(Route.data(), Route.params()) :: Route.on_error()
+      def error(data, params), do: {:error, %{data | params: params}}
 
       @doc false
       @impl true
       @spec resource(Route.data()) :: {:ok | :error, any}
-      def resource(_data), do: {:ok, nil}
+      def resource(data), do: {:ok, data.params}
 
-      defoverridable init: 1, enter: 2, exit: 1, resource: 1
+      defoverridable init: 1, enter: 2, exit: 1, error: 2, resource: 1
 
       @doc false
       @impl true
       @spec transition_complete(String.t(), Route.route_state(), Route.data()) :: :ok
-      def transition_complete(session_id, state, data),
-        do: Cinder.Route.transition_complete(unquote(app), __MODULE__, session_id, state, data)
+      def transition_complete(request_id, state, data),
+        do: Cinder.Route.transition_complete(unquote(app), __MODULE__, request_id, state, data)
 
       @doc false
       @spec __cinder_is__ :: {Cinder.Route, unquote(app)}

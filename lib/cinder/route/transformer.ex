@@ -27,22 +27,22 @@ defmodule Cinder.Route.Transformer do
       app
       |> Module.concat("Route")
 
-    routing_table =
+    cinder_routing_table =
       dsl_state
       |> Transformer.get_entities([:cinder, :router])
       |> Enum.filter(&is_struct(&1, Route))
       |> build_route_entries([], namespace)
-      |> then(fn routing_table ->
-        [{%StaticSegment{segment: "/"}, Module.concat(namespace, "App"), routing_table}]
+      |> then(fn cinder_routing_table ->
+        [{%StaticSegment{segment: "/"}, Module.concat(namespace, "App"), cinder_routing_table}]
       end)
 
-    route_modules =
-      routing_table
-      |> Stream.flat_map(&extract_route_modules/1)
+    cinder_route_modules =
+      cinder_routing_table
+      |> Stream.flat_map(&extract_cinder_route_modules/1)
       |> Enum.sort()
 
     duplicate_modules =
-      route_modules
+      cinder_route_modules
       |> Enum.frequencies()
       |> Stream.reject(&(elem(&1, 1) == 1))
       |> Enum.map(&elem(&1, 0))
@@ -51,14 +51,19 @@ defmodule Cinder.Route.Transformer do
       [] ->
         dsl_state =
           dsl_state
-          |> Transformer.persist(:routing_table, routing_table)
-          |> Transformer.persist(:route_modules, route_modules)
+          |> Transformer.persist(:cinder_routing_table, cinder_routing_table)
+          |> Transformer.persist(:cinder_route_modules, cinder_route_modules)
+          |> Transformer.persist(:cinder_app_route, Module.concat(namespace, "App"))
           |> Transformer.eval(
-            [route_modules: route_modules, routing_table: routing_table, app: app],
+            [
+              cinder_route_modules: cinder_route_modules,
+              cinder_routing_table: cinder_routing_table,
+              app: app
+            ],
             quote location: :keep do
-              def __routing_table__, do: unquote(Macro.escape(routing_table))
+              def __cinder_routing_table__, do: unquote(Macro.escape(cinder_routing_table))
 
-              for module <- unquote(route_modules) do
+              for module <- unquote(cinder_route_modules) do
                 unless Code.ensure_loaded?(module) || Module.open?(module) do
                   defmodule module do
                     use Cinder.Route, app: unquote(app)
@@ -101,7 +106,7 @@ defmodule Cinder.Route.Transformer do
     |> Enum.map(&build_segment/1)
     |> then(fn segments ->
       children = build_route_entries(route.children, [], namespace)
-      entry = routing_table_entry(route, segments, children, namespace)
+      entry = cinder_routing_table_entry(route, segments, children, namespace)
       build_route_entries(routes, [entry | result], namespace)
     end)
   end
@@ -111,10 +116,10 @@ defmodule Cinder.Route.Transformer do
 
   defp build_segment(segment), do: %StaticSegment{segment: segment}
 
-  defp routing_table_entry(route, [segment], children, namespace),
+  defp cinder_routing_table_entry(route, [segment], children, namespace),
     do: {segment, Module.concat(namespace, route.name), children}
 
-  defp routing_table_entry(router, segments, children, namespace) do
+  defp cinder_routing_table_entry(router, segments, children, namespace) do
     [last | rest] = Enum.reverse(segments)
 
     Enum.reduce(rest, {last, Module.concat(namespace, router.name), children}, fn segment,
@@ -123,9 +128,9 @@ defmodule Cinder.Route.Transformer do
     end)
   end
 
-  defp extract_route_modules({_, module, children}) do
+  defp extract_cinder_route_modules({_, module, children}) do
     children
-    |> Stream.flat_map(&extract_route_modules/1)
+    |> Stream.flat_map(&extract_cinder_route_modules/1)
     |> Stream.concat([module])
     |> Stream.reject(&is_nil/1)
   end

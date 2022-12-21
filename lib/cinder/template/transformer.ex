@@ -3,7 +3,7 @@ defmodule Cinder.Template.Transformer do
   use Spark.Dsl.Transformer
 
   alias Cinder.Route
-  alias Spark.{Dsl, Dsl.Transformer, Error.DslError}
+  alias Spark.{Dsl, Dsl.Transformer}
 
   @doc false
   @impl true
@@ -43,7 +43,7 @@ defmodule Cinder.Template.Transformer do
 
     templates =
       dsl_state
-      |> Transformer.get_persisted(:route_modules)
+      |> Transformer.get_persisted(:cinder_route_modules)
       |> Stream.flat_map(fn route ->
         base = delete_module_prefix(route, route_namespace)
 

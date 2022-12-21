@@ -4,6 +4,7 @@ defmodule Cinder.Engine.TransitionBuilder do
   """
 
   alias Cinder.{Engine.State, Route}
+  alias Spark.Dsl.Extension
 
   @doc """
   Build a transition to a new route.
@@ -26,6 +27,18 @@ defmodule Cinder.Engine.TransitionBuilder do
       |> build_op_stack([])
 
     %{state | op_stack: op_stack, status: :transitioning}
+  end
+
+  @doc """
+  Build a transition into an error state.
+  """
+  @spec build_transition_to_error(State.t(), Route.params()) :: State.t()
+  def build_transition_to_error(state, params) do
+    app_route = Extension.get_persisted(state.app, :cinder_app_route)
+
+    state
+    |> build_transition_to([{%{}, app_route}])
+    |> Map.update!(:op_stack, &Enum.concat(&1, [{:error, params, app_route}]))
   end
 
   # when the op stack is empty (there are no parental changes) so we can ignore

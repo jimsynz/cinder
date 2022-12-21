@@ -4,8 +4,8 @@ defmodule Example.App.Route.Slow do
 
   def init(opts) do
     delay = Keyword.get(opts, :delay, 5000)
-    session_id = Keyword.get(opts, :session_id)
-    {:ok, %{delay: delay, session_id: session_id, params: nil}}
+    request_id = Keyword.get(opts, :request_id)
+    {:ok, %{delay: delay, request_id: request_id, params: nil}}
   end
 
   def enter(state, params) do
@@ -13,7 +13,7 @@ defmodule Example.App.Route.Slow do
 
     Task.start(fn ->
       Process.sleep(state.delay)
-      transition_complete(state.session_id, :active, state)
+      transition_complete(state.request_id, :active, state)
     end)
 
     {:loading, state}
@@ -24,7 +24,7 @@ defmodule Example.App.Route.Slow do
 
     Task.start(fn ->
       Process.sleep(state.delay)
-      transition_complete(state.session_id, :inactive, state)
+      transition_complete(state.request_id, :inactive, state)
     end)
 
     {:unloading, state}

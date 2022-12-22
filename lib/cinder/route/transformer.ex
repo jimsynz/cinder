@@ -19,61 +19,51 @@ defmodule Cinder.Route.Transformer do
   @impl true
   @spec transform(Dsl.t()) :: {:ok, Dsl.t()} | {:error, DslError.t()}
   def transform(dsl_state) do
-    app =
-      dsl_state
-      |> Transformer.get_persisted(:module)
+    app = Transformer.get_persisted(dsl_state, :module)
+    namespace = Module.concat(app, "Route")
+    cinder_routing_table = build_routing_table(dsl_state)
+    cinder_route_modules = get_modules_from_routing_table(cinder_routing_table)
+    cinder_template_base_path = get_template_base_path(dsl_state)
 
-    namespace =
-      app
-      |> Module.concat("Route")
+    with :ok <- assert_no_duplicate_route_modules(cinder_route_modules) do
+      dsl_state =
+        dsl_state
+        |> Transformer.persist(:cinder_routing_table, cinder_routing_table)
+        |> Transformer.persist(:cinder_route_modules, cinder_route_modules)
+        |> Transformer.persist(:cinder_app_route, Module.concat(namespace, "App"))
+        |> Transformer.persist(:cinder_route_namespace, namespace)
+        |> Transformer.persist(:cinder_template_base_path, cinder_template_base_path)
+        |> Transformer.eval(
+          [
+            cinder_route_modules: cinder_route_modules,
+            cinder_routing_table: cinder_routing_table,
+            app: app
+          ],
+          quote location: :keep do
+            def __cinder_routing_table__, do: unquote(Macro.escape(cinder_routing_table))
 
-    cinder_routing_table =
-      dsl_state
-      |> Transformer.get_entities([:cinder, :router])
-      |> Enum.filter(&is_struct(&1, Route))
-      |> build_route_entries([], namespace)
-      |> then(fn cinder_routing_table ->
-        [{%StaticSegment{segment: "/"}, Module.concat(namespace, "App"), cinder_routing_table}]
-      end)
-
-    cinder_route_modules =
-      cinder_routing_table
-      |> Stream.flat_map(&extract_cinder_route_modules/1)
-      |> Enum.sort()
-
-    duplicate_modules =
-      cinder_route_modules
-      |> Enum.frequencies()
-      |> Stream.reject(&(elem(&1, 1) == 1))
-      |> Enum.map(&elem(&1, 0))
-
-    case duplicate_modules do
-      [] ->
-        dsl_state =
-          dsl_state
-          |> Transformer.persist(:cinder_routing_table, cinder_routing_table)
-          |> Transformer.persist(:cinder_route_modules, cinder_route_modules)
-          |> Transformer.persist(:cinder_app_route, Module.concat(namespace, "App"))
-          |> Transformer.eval(
-            [
-              cinder_route_modules: cinder_route_modules,
-              cinder_routing_table: cinder_routing_table,
-              app: app
-            ],
-            quote location: :keep do
-              def __cinder_routing_table__, do: unquote(Macro.escape(cinder_routing_table))
-
-              for module <- unquote(cinder_route_modules) do
-                unless Code.ensure_loaded?(module) || Module.open?(module) do
-                  defmodule module do
-                    use Cinder.Route, app: unquote(app)
-                  end
+            for module <- unquote(cinder_route_modules) do
+              unless Code.ensure_loaded?(module) || Module.open?(module) do
+                defmodule module do
+                  use Cinder.Route, app: unquote(app)
                 end
               end
             end
-          )
+          end
+        )
 
-        {:ok, dsl_state}
+      {:ok, dsl_state}
+    end
+  end
+
+  defp assert_no_duplicate_route_modules(cinder_route_modules) do
+    cinder_route_modules
+    |> Enum.frequencies()
+    |> Stream.reject(&(elem(&1, 1) == 1))
+    |> Enum.map(&elem(&1, 0))
+    |> case do
+      [] ->
+        :ok
 
       [module] ->
         {:error,
@@ -93,6 +83,45 @@ defmodule Cinder.Route.Transformer do
              "Route modules must have unique names, but the following modules occur more than once: #{modules}"
          )}
     end
+  end
+
+  defp get_template_base_path(dsl_state) do
+    dsl_state
+    |> Transformer.get_option([:templates], :base_path)
+    |> case do
+      path when is_binary(path) ->
+        path
+
+      path when is_struct(path, Path) ->
+        path
+
+      nil ->
+        dsl_state
+        |> Transformer.get_persisted(:file)
+        |> Path.join("../templates")
+    end
+    |> Path.expand()
+  end
+
+  defp build_routing_table(dsl_state) do
+    namespace =
+      dsl_state
+      |> Transformer.get_persisted(:module)
+      |> Module.concat("Route")
+
+    dsl_state
+    |> Transformer.get_entities([:cinder, :router])
+    |> Enum.filter(&is_struct(&1, Route))
+    |> build_route_entries([], namespace)
+    |> then(fn cinder_routing_table ->
+      [{%StaticSegment{segment: "/"}, Module.concat(namespace, "App"), cinder_routing_table}]
+    end)
+  end
+
+  defp get_modules_from_routing_table(cinder_routing_table) do
+    cinder_routing_table
+    |> Stream.flat_map(&extract_cinder_route_modules/1)
+    |> Enum.sort()
   end
 
   defp build_route_entries([], result, _namespace), do: result

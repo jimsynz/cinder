@@ -11,10 +11,10 @@ defmodule Cinder.Engine.Server do
     Engine.State,
     Engine.TransitionBuilder,
     Engine.TransitionExecutor,
+    Route,
     Route.Matcher
   }
 
-  alias Phoenix.PubSub
   alias Plug.Conn
   alias Spark.Dsl.Extension
 
@@ -29,9 +29,6 @@ defmodule Cinder.Engine.Server do
   @impl true
   @spec init(list) :: {:ok, State.t(), pos_integer()}
   def init([app, request_id]) do
-    pubsub = Extension.get_persisted(app, :cinder_engine_pubsub)
-    :ok = PubSub.subscribe(pubsub, "cinder_engine_server:#{request_id}")
-
     {:ok, %State{request_id: request_id, app: app}, timeout(app)}
   end
 
@@ -40,7 +37,7 @@ defmodule Cinder.Engine.Server do
     conn =
       conn
       |> Conn.put_resp_content_type("text/html")
-      |> Conn.send_resp(200, inspect(state))
+      |> Conn.send_resp(200, render(state))
 
     {:reply, conn, state, timeout(state.app)}
   end
@@ -90,13 +87,7 @@ defmodule Cinder.Engine.Server do
     end
   end
 
-  @impl true
-  def handle_info(:timeout, state) do
-    Logger.debug("Reconnect timeout: #{inspect(state.request_id)}")
-    {:stop, :normal, state}
-  end
-
-  def handle_info({:transition_complete, module, new_state, data}, state)
+  def handle_cast({:transition_complete, module, new_state, data}, state)
       when state.status == :transition_paused do
     state =
       state
@@ -107,12 +98,18 @@ defmodule Cinder.Engine.Server do
     {:noreply, state}
   end
 
-  def handle_info({:transition_complete, module, new_state, _data}, state) do
+  def handle_cast({:transition_complete, module, new_state, _data}, state) do
     Logger.debug(
       "Ignoring transition #{inspect(module)}/#{inspect(new_state)} because we're no longer transitioning"
     )
 
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(:timeout, state) do
+    Logger.debug("Reconnect timeout: #{inspect(state.request_id)}")
+    {:stop, :normal, state}
   end
 
   def handle_info(msg, state) do
@@ -138,5 +135,15 @@ defmodule Cinder.Engine.Server do
     app
     |> Extension.get_opt([:cinder, :engine], :reconnect_timeout, 10)
     |> then(&(&1 * 1_000))
+  end
+
+  defp render(state) do
+    state.current_routes
+    |> Enum.reverse()
+    |> Enum.reduce("", fn route, html ->
+      assigns = Route.assigns(route)
+      template = route.module.template(route.state)
+      template.(Map.put(assigns, :slots, %{default: html}))
+    end)
   end
 end

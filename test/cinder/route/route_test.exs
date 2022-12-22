@@ -32,12 +32,12 @@ defmodule Cinder.RouteTest do
     end
   end
 
-  describe "resource/1" do
-    test "it asks the route for the resource" do
+  describe "assigns/1" do
+    test "it asks the route for the assigns" do
       {:ok, route} = Route.init(Posts, [])
       {:active, route} = Route.enter(route, %{})
 
-      assert {:ok, %{}} = Route.resource(route)
+      assert %{} = Route.assigns(route)
     end
   end
 end

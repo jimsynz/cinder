@@ -2,7 +2,8 @@
   ignore_modules: [
     ~r/^Inspect\./,
     ~r/^Example\.App\./,
-    ~r/^Test/
+    ~r/^Test/,
+    Cinder.Route.Macros
   ],
   ignore_paths: [~r/^deps\/spark/],
   min_module_doc_coverage: 40,

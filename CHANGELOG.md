@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.3.0](https://gitlab.com/jimsy/cinder/compare/v0.2.1...v0.3.0) (2022-12-22)
+
+
+
+
+### Features:
+
+* route templates.
+
 ## [v0.2.1](https://gitlab.com/jimsy/cinder/compare/v0.2.0...v0.2.1) (2022-12-21)
 
 

@@ -1,8 +1,6 @@
 defmodule Cinder.Engine.ServerTest do
   use ExUnit.Case, async: true
-  alias Cinder.{Engine.Server, Engine.State, UniqueId}
-  alias Phoenix.PubSub
-  alias Spark.Dsl.Extension
+  alias Cinder.{Engine.Server, Engine.State, Route, UniqueId}
 
   setup do
     request_id = UniqueId.unique_id()
@@ -59,11 +57,7 @@ defmodule Cinder.Engine.ServerTest do
              ] = state.current_routes
 
       Example.App
-      |> Extension.get_persisted(:cinder_engine_pubsub)
-      |> PubSub.broadcast(
-        "cinder_engine_server:#{state.request_id}",
-        {:transition_complete, Example.App.Route.Stuck, :active, %{}}
-      )
+      |> Route.transition_complete(Example.App.Route.Stuck, state.request_id, :active, %{})
 
       state = GenServer.call(pid, :get_state)
       assert state.status == :idle

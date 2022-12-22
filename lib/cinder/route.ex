@@ -1,8 +1,9 @@
 defmodule Cinder.Route do
-  alias Cinder.{Engine, Route, Route.Segment}
-  alias Phoenix.PubSub
-  alias Spark.Dsl.Extension
   defstruct state: :initial, data: nil, module: nil, params: %{}
+
+  alias Cinder.{Engine, Route, Route.Segment}
+
+  import Cinder.Engine.Macros
 
   @moduledoc """
   Interface for and state of a route.
@@ -19,6 +20,7 @@ defmodule Cinder.Route do
   @type route_module :: module
   @type params :: %{required(String.t()) => String.t()}
   @type cinder_routing_table :: [{Segment.t(), module | nil, cinder_routing_table()}]
+  @type assigns :: %{required(atom) => any}
 
   @type route_state ::
           :initial
@@ -37,8 +39,9 @@ defmodule Cinder.Route do
   @callback exit(data) :: on_exit()
   @callback error(data, params) :: on_error()
 
-  @callback resource(data) :: {:ok, any} | {:error, any}
+  @callback assigns(data) :: assigns
   @callback transition_complete(Engine.request_id(), route_state, data) :: :ok | {:error, any}
+  @callback template(route_state) :: (assigns -> String.t())
 
   @doc """
   Initialise a route.
@@ -98,17 +101,32 @@ defmodule Cinder.Route do
   end
 
   @doc """
-  Retrieve the route's resource.
+  Retrieve the route's assigns.
+
+  This function is called whenever a route is being rendered, and the result is
+  placed in the template's assigns.
   """
-  @spec resource(t) :: {:ok, any} | {:error, any}
-  def resource(state) when state.state == :active, do: state.module.resource(state.data)
-  def resource(_state), do: {:error, "Route not active"}
+  @spec assigns(t) :: assigns()
+  def assigns(state), do: state.module.assigns(state.data)
 
   @doc """
   A subset of the route state used for comparison in the router.
   """
   @spec for_compare(t) :: {params, route_module}
   def for_compare(state), do: {state.params, state.module}
+
+  @doc """
+  Render a template for the given route.
+  """
+  @spec render(t, slots :: %{required(atom) => String.t()}) :: String.t() | no_return
+  def render(route, slots) do
+    assigns =
+      route
+      |> assigns()
+      |> Map.put(:slots, slots)
+
+    route.module.template(route.state, assigns)
+  end
 
   @doc """
   Complete an asynchronous route transition.
@@ -119,20 +137,21 @@ defmodule Cinder.Route do
   @spec transition_complete(Cinder.app(), route_module, String.t(), route_state, data()) ::
           :ok | {:error, any}
   def transition_complete(app, route_module, request_id, state, data) do
-    pubsub = Extension.get_persisted(app, :cinder_engine_pubsub)
-
-    PubSub.broadcast(
-      pubsub,
-      "cinder_engine_server:#{request_id}",
-      {:transition_complete, route_module, state, data}
-    )
+    GenServer.cast(via(app, request_id), {:transition_complete, route_module, state, data})
   end
 
   @spec __using__(keyword) :: Macro.t()
   defmacro __using__(opts) do
-    app = Keyword.fetch!(opts, :app)
+    app =
+      opts
+      |> Keyword.fetch!(:app)
+      |> Macro.expand(__CALLER__)
 
     quote location: :keep do
+      require EEx
+
+      import Cinder.Route.Macros
+
       @behaviour Route
 
       @doc false
@@ -164,10 +183,12 @@ defmodule Cinder.Route do
 
       @doc false
       @impl true
-      @spec resource(Route.data()) :: {:ok | :error, any}
-      def resource(data), do: {:ok, data.params}
+      @spec assigns(Route.data()) :: Route.assigns()
+      def assigns(data), do: %{params: data.params}
 
-      defoverridable init: 1, enter: 2, exit: 1, error: 2, resource: 1
+      deftemplates(unquote(app))
+
+      defoverridable init: 1, enter: 2, exit: 1, error: 2, assigns: 1
 
       @doc false
       @impl true

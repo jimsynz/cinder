@@ -1,5 +1,5 @@
 defmodule Cinder.Dsl do
-  alias Cinder.{Dsl, Engine, Plug, Route, Template}
+  alias Cinder.{Dsl, Engine, Plug, Route}
   alias Spark.Dsl.{Entity, Section}
 
   @moduledoc """
@@ -106,7 +106,7 @@ defmodule Cinder.Dsl do
 
   use Spark.Dsl.Extension,
     sections: @dsl,
-    transformers: [Engine.Transformer, Plug.Transformer, Route.Transformer, Template.Transformer]
+    transformers: [Engine.Transformer, Plug.Transformer, Route.Transformer]
 
   @doc false
   @spec dsl :: [Section.t()]

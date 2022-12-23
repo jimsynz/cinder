@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.4.0](https://gitlab.com/jimsy/cinder/compare/v0.3.0...v0.4.0) (2022-12-23)
+
+
+
+
+### Features:
+
+* assets: Use `esbuild` to build assets.
+
 ## [v0.3.0](https://gitlab.com/jimsy/cinder/compare/v0.2.1...v0.3.0) (2022-12-22)
 
 

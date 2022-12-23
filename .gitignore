@@ -27,3 +27,5 @@ cinder-*.tar
 
 .env*
 .DS_Store
+
+priv/static/assets

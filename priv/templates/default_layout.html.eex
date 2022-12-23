@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="cinder-request-id" content="<%= @cinder_request_id %>"/>
+    <title><%= yield(:title) %></title>
+    <%= yield(:head) %>
+    <script type="text/javascript" src="/assets/cinder.js"></script>
+  </head>
+  <body>
+    <%= yield() %>
+  </body>
+</html>

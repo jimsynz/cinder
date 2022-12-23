@@ -11,6 +11,7 @@ defmodule Cinder.Plug do
     cookie_signing_salt = Extension.get_opt(app, [:cinder], :cookie_signing_salt)
 
     default_plugs = [
+      {Plug.Static, [from: "priv/static", at: "/"]},
       {Cinder.Plug.SetSecretKeyBase, [app: app]},
       {Plug.Session,
        [

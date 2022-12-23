@@ -37,7 +37,7 @@ defmodule Cinder.Engine.Server do
     conn =
       conn
       |> Conn.put_resp_content_type("text/html")
-      |> Conn.send_resp(200, render(state, true))
+      |> Conn.send_resp(state.http_status, render(state, true))
 
     {:reply, conn, state, timeout(state.app)}
   end
@@ -47,20 +47,35 @@ defmodule Cinder.Engine.Server do
   def handle_call(:request_id, _from, state), do: {:reply, state.request_id, state}
 
   @impl true
-  def handle_cast({:transition_to, path_and_query}, state) when is_binary(path_and_query) do
+
+  def handle_cast({:transition_to, path_and_query}, state) when is_binary(path_and_query),
+    do: handle_cast({:transition_to, path_and_query, %{}}, state)
+
+  def handle_cast({:transition_to, path_and_query, params}, state)
+      when is_binary(path_and_query) do
     case String.split(path_and_query, "?", parts: 2) do
       [path, query] ->
-        handle_cast({:transition_to, Path.split(path), URI.decode_query(query)}, state)
+        params =
+          query
+          |> URI.decode_query()
+          |> Map.merge(params)
+
+        handle_cast({:transition_to, Path.split(path), params}, state)
 
       ["", query] ->
-        handle_cast({:transition_to, ["/"], URI.decode_query(query)}, state)
+        params =
+          query
+          |> URI.decode_query()
+          |> Map.merge(params)
+
+        handle_cast({:transition_to, ["/"], params}, state)
 
       [path] ->
-        handle_cast({:transition_to, Path.split(path), %{}}, state)
+        handle_cast({:transition_to, Path.split(path), params}, state)
     end
   end
 
-  def handle_cast({:transition_to, path_info, params}, state) do
+  def handle_cast({:transition_to, path_info, params}, state) when is_list(path_info) do
     state = %{state | path_info: path_info, params: params}
 
     Logger.debug(
@@ -80,7 +95,7 @@ defmodule Cinder.Engine.Server do
 
       :error ->
         state =
-          state
+          %{state | http_status: 404}
           |> TransitionBuilder.build_transition_to_error(%{
             "reason" => "route not found",
             "status" => "404"
@@ -165,8 +180,10 @@ defmodule Cinder.Engine.Server do
     |> Enum.reverse()
     |> Enum.reduce("", fn route, html ->
       assigns = Route.assigns(route)
-      template = route.module.template(route.state)
-      template.(Map.put(assigns, :slots, %{default: html}))
+      state_template = route.module.template(route.state)
+      html = state_template.(Map.put(assigns, :slots, %{default: html}))
+      base_template = route.module.template(:base)
+      base_template.(Map.put(assigns, :slots, %{default: html}))
     end)
   end
 
@@ -189,11 +206,11 @@ defmodule Cinder.Engine.Server do
     state
     |> TransitionExecutor.execute_transition()
     |> tap(fn
-      %{status: :idle} ->
-        Logger.debug("[#{state.request_id}] Transition complete.")
+      %{status: :idle, current_routes: routes} ->
+        Logger.debug("[#{state.request_id}] Transition complete: #{inspect(routes)}")
 
-      %{status: :transition_paused} ->
-        Logger.debug("[#{state.request_id}] Transition paused.")
+      %{status: :transition_paused, current_routes: routes} ->
+        Logger.debug("[#{state.request_id}] Transition paused: #{inspect(routes)}")
     end)
     |> maybe_broadcast_changes()
   end

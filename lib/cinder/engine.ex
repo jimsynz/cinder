@@ -57,8 +57,8 @@ defmodule Cinder.Engine do
 
       @doc false
       @impl true
-      @spec transition_to(Engine.request_id(), [String.t()], Route.params()) :: :ok
-      def transition_to(request_id, path_info, params),
+      @spec transition_to(Engine.request_id(), String.t() | [String.t()], Route.params()) :: :ok
+      def transition_to(request_id, path_info, params \\ %{}),
         do: Engine.transition_to(unquote(app), request_id, path_info, params)
 
       @doc false
@@ -130,8 +130,11 @@ defmodule Cinder.Engine do
   def transition_to(app, request_id, ["/" | _] = path_info, params),
     do: app |> via(request_id) |> GenServer.cast({:transition_to, path_info, params})
 
-  def transition_to(app, request_id, path_info, params),
+  def transition_to(app, request_id, path_info, params) when is_list(path_info),
     do: transition_to(app, request_id, ["/" | path_info], params)
+
+  def transition_to(app, request_id, path_info, params) when is_binary(path_info),
+    do: app |> via(request_id) |> GenServer.cast({:transition_to, path_info, params})
 
   @doc false
   @spec render_once(Cinder.app(), request_id, Plug.Conn.t()) :: String.t() | no_return

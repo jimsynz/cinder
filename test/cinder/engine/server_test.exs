@@ -32,7 +32,7 @@ defmodule Cinder.Engine.ServerTest do
 
   describe "handle_cast/2" do
     test "it can transition to a new route", %{pid: pid} do
-      GenServer.cast(pid, {:transition_to, "/posts/123/comments"})
+      GenServer.cast(pid, {:transition_to, "/posts/123/comments", %{}})
 
       state = GenServer.call(pid, :get_state)
       assert state.status == :idle

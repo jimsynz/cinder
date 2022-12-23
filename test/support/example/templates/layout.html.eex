@@ -6,7 +6,7 @@
     <meta name="cinder-request-id" content="<%= @cinder_request_id %>"/>
     <title><%= yield(:title) %></title>
     <%= yield(:head) %>
-    <script type="text/javascript" src="/assets/app.js"></script>
+    <script type="text/javascript" src="/cinder.js"></script>
   </head>
   <body>
     <%= yield() %>

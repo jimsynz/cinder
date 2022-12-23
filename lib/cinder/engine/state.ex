@@ -10,7 +10,8 @@ defmodule Cinder.Engine.State do
             current_routes: [],
             op_stack: [],
             sockets: [],
-            status: :idle
+            status: :idle,
+            http_status: 200
 
   @type params :: %{required(String.t()) => String.t()}
   @type status :: :idle | :transitioning | :transition_paused
@@ -25,6 +26,7 @@ defmodule Cinder.Engine.State do
           current_routes: [Route.t()],
           op_stack: op_stack,
           sockets: [pid],
-          status: status
+          status: status,
+          http_status: pos_integer()
         }
 end

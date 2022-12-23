@@ -9,6 +9,7 @@ defmodule Cinder.Engine.State do
             query_params: %{},
             current_routes: [],
             op_stack: [],
+            sockets: [],
             status: :idle
 
   @type params :: %{required(String.t()) => String.t()}
@@ -23,6 +24,7 @@ defmodule Cinder.Engine.State do
           query_params: %{required(String.t()) => String.t()},
           current_routes: [Route.t()],
           op_stack: op_stack,
+          sockets: [pid],
           status: status
         }
 end

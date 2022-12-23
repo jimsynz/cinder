@@ -37,7 +37,7 @@ defmodule Cinder.Engine.Server do
     conn =
       conn
       |> Conn.put_resp_content_type("text/html")
-      |> Conn.send_resp(200, render(state))
+      |> Conn.send_resp(200, render(state, true))
 
     {:reply, conn, state, timeout(state.app)}
   end
@@ -63,6 +63,10 @@ defmodule Cinder.Engine.Server do
   def handle_cast({:transition_to, path_info, params}, state) do
     state = %{state | path_info: path_info, params: params}
 
+    Logger.debug(
+      "[#{state.request_id}] Transitioning to #{inspect(path_info)} :: #{inspect(params)}"
+    )
+
     path_info
     |> Matcher.match(state.app.__cinder_routing_table__())
     |> case do
@@ -70,7 +74,7 @@ defmodule Cinder.Engine.Server do
         state =
           state
           |> TransitionBuilder.build_transition_to(routes)
-          |> TransitionExecutor.execute_transition()
+          |> execute_transition()
 
         {:noreply, state}
 
@@ -81,7 +85,7 @@ defmodule Cinder.Engine.Server do
             "reason" => "route not found",
             "status" => "404"
           })
-          |> TransitionExecutor.execute_transition()
+          |> execute_transition()
 
         {:noreply, state}
     end
@@ -93,7 +97,7 @@ defmodule Cinder.Engine.Server do
       state
       |> update_route_by_module(module, &%{&1 | state: new_state, data: data})
       |> Map.put(:status, :transitioning)
-      |> TransitionExecutor.execute_transition()
+      |> execute_transition()
 
     {:noreply, state}
   end
@@ -106,10 +110,29 @@ defmodule Cinder.Engine.Server do
     {:noreply, state}
   end
 
+  def handle_cast({:socket, pid}, state) do
+    Logger.debug("[#{state.request_id}] Adding pid #{inspect(pid)} to sockets")
+    Process.monitor(pid)
+
+    {:noreply, %{state | sockets: [pid | state.sockets]}}
+  end
+
   @impl true
   def handle_info(:timeout, state) do
-    Logger.debug("Reconnect timeout: #{inspect(state.request_id)}")
+    Logger.debug("[#{state.request_id}] Reconnect timeout.")
     {:stop, :normal, state}
+  end
+
+  def handle_info({:DOWN, _, :process, pid, _}, state) do
+    Logger.debug("[#{state.request_id}] Removing pid #{inspect(pid)} from sockets")
+
+    sockets = List.delete(state.sockets, pid)
+
+    if Enum.empty?(sockets) do
+      {:noreply, %{state | sockets: sockets}, timeout(state.app)}
+    else
+      {:noreply, %{state | sockets: sockets}}
+    end
   end
 
   def handle_info(msg, state) do
@@ -137,7 +160,7 @@ defmodule Cinder.Engine.Server do
     |> then(&(&1 * 1_000))
   end
 
-  defp render(state) do
+  defp render(state, false) do
     state.current_routes
     |> Enum.reverse()
     |> Enum.reduce("", fn route, html ->
@@ -145,5 +168,45 @@ defmodule Cinder.Engine.Server do
       template = route.module.template(route.state)
       template.(Map.put(assigns, :slots, %{default: html}))
     end)
+  end
+
+  defp render(state, true) do
+    html = render(state, false)
+
+    assigns = %{
+      slots: %{
+        default: "<div data=\"cinder-main\">#{html}</div>"
+      },
+      cinder_request_id: state.request_id
+    }
+
+    state.app
+    |> Extension.get_persisted(:cinder_layout)
+    |> apply(:render, [assigns])
+  end
+
+  defp execute_transition(state) do
+    state
+    |> TransitionExecutor.execute_transition()
+    |> tap(fn
+      %{status: :idle} ->
+        Logger.debug("[#{state.request_id}] Transition complete.")
+
+      %{status: :transition_paused} ->
+        Logger.debug("[#{state.request_id}] Transition paused.")
+    end)
+    |> maybe_broadcast_changes()
+  end
+
+  defp maybe_broadcast_changes(state) when state.sockets == [], do: state
+
+  defp maybe_broadcast_changes(state) do
+    html = render(state, false)
+
+    for pid <- state.sockets do
+      send(pid, {:rerender, html})
+    end
+
+    state
   end
 end

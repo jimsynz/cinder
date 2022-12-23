@@ -84,14 +84,26 @@ defmodule Cinder.Engine do
     registry = Extension.get_persisted(app, :cinder_engine_registry)
     supervisor = Extension.get_persisted(app, :cinder_engine_supervisor)
     plug = Extension.get_persisted(app, :cinder_plug)
-    pubsub = Extension.get_persisted(app, :cinder_engine_pubsub)
+    pubsub = Extension.get_persisted(app, :cinder_pubsub)
     port = Extension.get_opt(app, [:cinder], :listen_port, 4000)
 
     [
       {Registry, [keys: :unique, name: registry]},
       {DynamicSupervisor, name: supervisor, extra_arguments: [app]},
       {Phoenix.PubSub, name: pubsub},
-      {Plug.Cowboy, scheme: :http, plug: plug, options: [port: port]}
+      {Plug.Cowboy,
+       scheme: :http,
+       plug: plug,
+       options: [
+         port: port,
+         dispatch: [
+           {:_,
+            [
+              {"/ws", Cinder.WebsocketHandler, [app: app]},
+              {:_, Plug.Cowboy.Handler, {plug, [app: app]}}
+            ]}
+         ]
+       ]}
     ]
     |> Supervisor.init(strategy: :one_for_one)
   end

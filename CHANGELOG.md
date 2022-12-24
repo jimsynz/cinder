@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.5.0](https://gitlab.com/jimsy/cinder/compare/v0.4.0...v0.5.0) (2022-12-24)
+
+
+
+
+### Features:
+
+* websocket: more robust websocket and transition handling.
+
 ## [v0.4.0](https://gitlab.com/jimsy/cinder/compare/v0.3.0...v0.4.0) (2022-12-23)
 
 

@@ -23,8 +23,9 @@ defmodule Cinder.Route.Macros do
       |> Extension.get_persisted(:cinder_template_base_path)
       |> then(fn base_path ->
         [
-          base: "#{underscored}.html.eex",
           active: "#{underscored}/active.html.eex",
+          base: "#{underscored}.html.eex",
+          error: "#{underscored}/error.html.eex",
           inactive: "#{underscored}/inactive.html.eex",
           loading: "#{underscored}/loading.html.eex",
           unloading: "#{underscored}/unloading.html.eex"
@@ -74,17 +75,24 @@ defmodule Cinder.Route.Macros do
         end
       end
 
-      def template(_) do
-        ast =
-          if File.exists?(unquote(base_template)) do
+      if File.exists?(base_template) do
+        def template(:base) do
+          ast =
             EEx.compile_file(unquote(base_template),
               engine: Engine,
               file: unquote(base_template),
               line: 1
             )
-          else
-            EEx.compile_string("<%= yield %>", engine: Engine)
+
+          fn assigns ->
+            {result, _bindings} = Code.eval_quoted(ast, assigns: assigns)
+            result
           end
+        end
+      end
+
+      def template(_) do
+        ast = EEx.compile_string("<%= yield %>", engine: Engine)
 
         fn assigns ->
           {result, _bindings} = Code.eval_quoted(ast, assigns: assigns)

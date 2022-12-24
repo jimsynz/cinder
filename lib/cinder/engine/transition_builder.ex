@@ -19,6 +19,12 @@ defmodule Cinder.Engine.TransitionBuilder do
       routes
       |> Stream.map(&%{params: elem(&1, 0), module: elem(&1, 1)})
       |> Stream.reject(&is_nil(&1.module))
+      |> Enum.reverse()
+      |> then(fn
+        [last | routes] -> [%{last | params: Map.merge(last.params, state.params)} | routes]
+        routes -> routes
+      end)
+      |> Enum.reverse()
 
     op_stack =
       state.current_routes

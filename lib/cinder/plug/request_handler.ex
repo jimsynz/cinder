@@ -25,7 +25,6 @@ defmodule Cinder.Plug.RequestHandler do
       end
 
     engine = Extension.get_persisted(opts.app, :cinder_engine)
-
     engine.start!(request_id)
     engine.transition_to(request_id, conn.path_info, conn.params)
     engine.render_once(request_id, conn)

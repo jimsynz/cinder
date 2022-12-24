@@ -28,14 +28,27 @@ defmodule Cinder.Engine.TransitionExecutor do
 
   # This route has finished unloading and can be popped.
   defp do_execute_transition([{:exit, module} | op_stack], [route | current_routes], state)
-       when module == route.module and route.state in ~w[inactive error]a,
-       do: do_execute_transition(op_stack, current_routes, state)
+       when module == route.module and route.state in ~w[inactive error]a do
+    Logger.debug(
+      "[#{state.request_id}] Exited `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+    )
+
+    do_execute_transition(op_stack, current_routes, state)
+  end
 
   defp do_execute_transition([{:exit, module} | op_stack], [route | current_routes], state)
        when module == route.module do
+    Logger.debug(
+      "[#{state.request_id}] Exiting `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+    )
+
     case Route.exit(route) do
       {:unloading, route} ->
         # the route needs time to unload, so we exit early.
+        Logger.debug(
+          "[#{state.request_id}] Unloading `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+        )
+
         %{
           state
           | op_stack: [{:exit, module} | op_stack],
@@ -44,9 +57,17 @@ defmodule Cinder.Engine.TransitionExecutor do
         }
 
       {:inactive, _route} ->
+        Logger.debug(
+          "[#{state.request_id}] Exited `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+        )
+
         do_execute_transition(op_stack, current_routes, state)
 
       {:error, route} ->
+        Logger.debug(
+          "[#{state.request_id}] Errored while exiting `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+        )
+
         do_execute_transition(op_stack, [route | current_routes], state)
     end
   end
@@ -61,9 +82,17 @@ defmodule Cinder.Engine.TransitionExecutor do
          state
        )
        when route.module == module do
+    Logger.debug(
+      "[#{state.request_id}] Entering `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+    )
+
     case Route.enter(route, params) do
       {:loading, route} ->
         # the route needs time to load, so we exit early.
+        Logger.debug(
+          "[#{state.request_id}] Loading `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+        )
+
         %{
           state
           | op_stack: [{:enter, module, params} | op_stack],
@@ -72,9 +101,17 @@ defmodule Cinder.Engine.TransitionExecutor do
         }
 
       {:active, route} ->
+        Logger.debug(
+          "[#{state.request_id}] Entered `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+        )
+
         do_execute_transition(op_stack, [route | current_routes], state)
 
       {:error, route} ->
+        Logger.debug(
+          "[#{state.request_id}] Error while entering `#{inspect(route.module)}` :: `#{inspect(route.params)}`"
+        )
+
         do_execute_transition(op_stack, [route | current_routes], state)
     end
   end

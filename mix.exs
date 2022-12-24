@@ -16,7 +16,11 @@ defmodule Cinder.MixProject do
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
-      preferred_cli_env: [ci: :test]
+      preferred_cli_env: [ci: :test],
+      dialyzer: [
+        plt_add_apps: [:mix, :ex_unit],
+        list_unused_filters: true
+      ]
     ]
   end
 
@@ -46,8 +50,8 @@ defmodule Cinder.MixProject do
       {:spark, "~> 0.3.1"},
       {:credo, "~> 1.6", only: ~w[dev test]a, runtime: false},
       {:doctor, "~> 0.21", only: ~w[dev test]a, runtime: false},
-      {:esbuild, "~> 0.6.0", only: ~w[dev test]a},
       {:dialyxir, "~> 1.2", only: ~w[dev test]a, runtime: false},
+      {:esbuild, "~> 0.6.0", only: ~w[dev test]a},
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false}
     ]

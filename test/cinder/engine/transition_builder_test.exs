@@ -141,6 +141,22 @@ defmodule Cinder.Engine.TransitionBuilderTest do
                {:exit, Example.App.Route.Fruit}
              ] = state.op_stack
     end
+
+    test "build transition from / to /fruits/apple?variety=granny%20smith" do
+      state =
+        [{%{}, Example.App.Route.App}]
+        |> build_state(%{params: %{"variety" => "granny smith"}})
+        |> build_transition_to([
+          {%{}, Example.App.Route.App},
+          {%{"id" => "apple"}, Example.App.Route.Fruit}
+        ])
+
+      assert state.status == :transitioning
+
+      assert [
+               {:enter, Example.App.Route.Fruit, %{"id" => "apple", "variety" => "granny smith"}}
+             ] = state.op_stack
+    end
   end
 
   describe "build_transition_to_error/2" do

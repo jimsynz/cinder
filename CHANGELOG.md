@@ -5,6 +5,13 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.0](https://gitlab.com/jimsy/cinder/compare/v0.5.0...v1.0.0) (2023-01-16)
+### Breaking Changes:
+
+* Relicense to HL3-FULL
+
+
+
 ## [v0.5.0](https://gitlab.com/jimsy/cinder/compare/v0.4.0...v0.5.0) (2022-12-24)
 
 

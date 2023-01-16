@@ -1,4 +1,4 @@
-Angle Copyright 2022 James Harton ("Licensor")
+Copyright 2022 James Harton ("Licensor")
 
 **HIPPOCRATIC LICENSE**
 

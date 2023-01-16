@@ -27,7 +27,7 @@ defmodule Cinder.MixProject do
   def package do
     [
       maintainers: ["James Harton <james@harton.nz>"],
-      licenses: ["Hippocratic"],
+      licenses: ["HL3-FULL"],
       links: %{
         "Source" => "https://gitlab.com/jimsy/cinder"
       }

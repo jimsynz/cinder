@@ -9,11 +9,13 @@
       {{#yield "title"}}Cinder{{/yield}}
     </title>
     {{#yield "head"}}{{/yield}}
-    <script type="text/javascript" src="/assets/app.js"></script>
+    <script type="text/javascript" src="/cinder.js"></script>
   </head>
 
   <body>
-    {{yield}}
+    <div data="cinder-main">
+      {{yield}}
+    </div>
   </body>
 
 </html>

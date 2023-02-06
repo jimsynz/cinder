@@ -58,7 +58,7 @@ defmodule Cinder.WebsocketHandler do
   @impl true
   # @spec websocket_info(any, map) :: {:ok, map} | {:reply, {:text, String.t()}, map}
   def websocket_info({:rerender, html}, state) do
-    {:reply, {:text, Jason.encode!(%{replace_main: html})}, state}
+    {:reply, {:text, Jason.encode!(%{replace_main: IO.chardata_to_string(html)})}, state}
   end
 
   def websocket_info(:ping, state), do: {:reply, {:ping, []}, state}

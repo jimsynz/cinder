@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.1](https://gitlab.com/jimsy/cinder/compare/v1.0.0...v1.0.1) (2023-02-06)
+
+
+
+
+### Bug Fixes:
+
+* client side regressions caused by new templates.
+
 ## [v1.0.0](https://gitlab.com/jimsy/cinder/compare/v0.5.0...v1.0.0) (2023-01-16)
 ### Breaking Changes:
 

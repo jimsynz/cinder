@@ -1,12 +1,35 @@
 {
   "cSpell.words": [
+    "animationcancel",
+    "animationend",
+    "animationiteration",
+    "animationstart",
+    "beforeinput",
+    "bigly",
     "deftemplates",
     "elem",
     "enumerables",
     "esbuild",
+    "gotpointercapture",
+    "iolist",
     "Lexer",
+    "nofile",
     "noreply",
+    "pointercancel",
+    "pointerdown",
+    "pointerenter",
+    "pointerleave",
+    "pointermove",
+    "pointerout",
+    "pointerover",
+    "pointerup",
     "prewalk",
-    "priv"
+    "priv",
+    "proplists",
+    "renderable",
+    "transitioncancel",
+    "transitionend",
+    "transitionstart",
+    "vars"
   ]
 }

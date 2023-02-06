@@ -151,10 +151,13 @@ defmodule Cinder.Route.Transformer do
   defp cinder_routing_table_entry(router, segments, children, namespace) do
     [last | rest] = Enum.reverse(segments)
 
-    Enum.reduce(rest, {last, Module.concat(namespace, router.name), children}, fn segment,
-                                                                                  previous ->
-      {segment, nil, [previous]}
-    end)
+    Enum.reduce(
+      rest,
+      {last, Module.concat(namespace, router.name), children},
+      fn segment, previous ->
+        {segment, nil, [previous]}
+      end
+    )
   end
 
   defp extract_cinder_route_modules({_, module, children}) do

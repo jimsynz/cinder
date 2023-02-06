@@ -173,7 +173,7 @@ defmodule Cinder.Route do
 
       deftemplates(unquote(app))
 
-      defoverridable init: 1, enter: 2, exit: 1, error: 2, assigns: 1
+      defoverridable init: 1, enter: 2, exit: 1, error: 2, assigns: 1, template: 1
 
       @doc false
       @impl true

@@ -16,7 +16,7 @@ defmodule Cinder.MixProject do
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
-      compilers: [:neotoma | Mix.compilers()],
+      compilers: compilers(Mix.env()),
       preferred_cli_env: [ci: :test],
       dialyzer: [
         plt_add_apps: [:mix, :ex_unit],
@@ -42,10 +42,12 @@ defmodule Cinder.MixProject do
     ]
   end
 
+  defp compilers(env) when env in ~w[dev test]a, do: [:neotoma | Mix.compilers()]
+  defp compilers(_env), do: Mix.compilers()
+
   defp deps do
     [
       {:jason, "~> 1.4"},
-      {:phoenix_html, "~> 3.2"},
       {:phoenix_pubsub, "~> 2.1"},
       {:plug, "~> 1.14"},
       {:plug_cowboy, "~> 2.6"},

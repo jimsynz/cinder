@@ -39,16 +39,7 @@ defmodule Cinder.Template.Rendered.Attribute do
 
     def optimise(%{value: {:fn, _, _}} = attribute, _env), do: attribute
 
-    def optimise(attribute, env) when is_binary(attribute.value) do
-      fun =
-        quote context: env.module, generated: true do
-          fn _assigns, _slots, _locals ->
-            [unquote(attribute.name), "=", ?", HtmlEscaper.escape(unquote(attribute.value)), ?"]
-          end
-        end
-
-      %{attribute | value: fun}
-    end
+    def optimise(attribute, _env) when is_binary(attribute.value), do: attribute
 
     def optimise(attribute, env) do
       fun =
@@ -84,8 +75,9 @@ defmodule Cinder.Template.Rendered.Attribute do
 
     @doc false
     @spec execute(Attribute.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata()
-    def execute(attribute, assigns, slots, locals) do
-      attribute.value.(assigns, slots, locals)
-    end
+    def execute(attribute, assigns, slots, locals) when is_function(attribute.value, 3),
+      do: attribute.value.(assigns, slots, locals)
+
+    def execute(attribute, _, _, _), do: render(attribute)
   end
 end

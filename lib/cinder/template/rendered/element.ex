@@ -132,7 +132,19 @@ defmodule Cinder.Template.Rendered.Element do
 
         %{element | renderer: fun}
       else
-        element
+        attributes =
+          element.attributes
+          |> Enum.reverse()
+          |> Enum.map(&Compilable.optimise(&1, env))
+          |> Static.optimise_sequence()
+
+        children =
+          element.children
+          |> Enum.reverse()
+          |> Enum.map(&Compilable.optimise(&1, env))
+          |> Static.optimise_sequence()
+
+        %{element | attributes: attributes, children: children}
         |> Render.render()
         |> Static.init()
         |> Compilable.optimise(env)

@@ -1,6 +1,6 @@
 defmodule Cinder.Route.Macros do
   @moduledoc false
-  alias Cinder.{Route, Template, Template.Engine}
+  alias Cinder.{Route, Template}
   alias Spark.Dsl.Extension
 
   @doc false
@@ -23,12 +23,12 @@ defmodule Cinder.Route.Macros do
       |> Extension.get_persisted(:cinder_template_base_path)
       |> then(fn base_path ->
         [
-          active: "#{underscored}/active.html.eex",
-          base: "#{underscored}.html.eex",
-          error: "#{underscored}/error.html.eex",
-          inactive: "#{underscored}/inactive.html.eex",
-          loading: "#{underscored}/loading.html.eex",
-          unloading: "#{underscored}/unloading.html.eex"
+          active: "#{underscored}/active.hbs",
+          base: "#{underscored}.hbs",
+          error: "#{underscored}/error.hbs",
+          inactive: "#{underscored}/inactive.hbs",
+          loading: "#{underscored}/loading.hbs",
+          unloading: "#{underscored}/unloading.hbs"
         ]
         |> Enum.map(fn {state, path} -> {state, Path.join(base_path, path)} end)
       end)
@@ -49,6 +49,8 @@ defmodule Cinder.Route.Macros do
             state_templates: state_templates,
             base_template: base_template
           ] do
+      use Cinder.Template
+
       for path <- Keyword.values(possible_templates) do
         @external_resource path
       end
@@ -63,41 +65,21 @@ defmodule Cinder.Route.Macros do
       end
 
       @doc false
-      @spec template(Route.route_state()) :: (Route.assigns() -> String.t())
+      @spec template(Route.route_state() | :bas) :: Template.Render.t()
       for {state, path} <- state_templates do
         def template(unquote(state)) do
-          ast = EEx.compile_file(unquote(path), engine: Engine, file: unquote(path), line: 1)
-
-          fn assigns ->
-            {result, _bindings} = Code.eval_quoted(ast, assigns: assigns)
-            result
-          end
+          compile_file(unquote(path))
         end
       end
 
       if File.exists?(base_template) do
         def template(:base) do
-          ast =
-            EEx.compile_file(unquote(base_template),
-              engine: Engine,
-              file: unquote(base_template),
-              line: 1
-            )
-
-          fn assigns ->
-            {result, _bindings} = Code.eval_quoted(ast, assigns: assigns)
-            result
-          end
+          compile_file(unquote(base_template))
         end
       end
 
       def template(_) do
-        ast = EEx.compile_string("<%= yield %>", engine: Engine)
-
-        fn assigns ->
-          {result, _bindings} = Code.eval_quoted(ast, assigns: assigns)
-          result
-        end
+        ~B"{{yield}}"
       end
     end
   end

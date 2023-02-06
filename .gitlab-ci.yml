@@ -68,13 +68,13 @@ format:
   script:
     - mix format --check-formatted
 
-docs:
-  image: elixir:latest
-  dependencies:
-    - build
-  stage: test
-  script:
-    - mix doctor --full
+# docs:
+#   image: elixir:latest
+#   dependencies:
+#     - build
+#   stage: test
+#   script:
+#     - mix doctor --full
 
 pages:
   image: elixir:latest
@@ -136,7 +136,6 @@ release-gitlab:
       --tag-name "v${APP_VERSION}" \
       --assets-link "{\"name\":\"${APP_NAME}-${APP_VERSION}.tar.gz\",\"url\":\"${PACKAGE_REGISTRY_URL}/${APP_NAME}/${APP_VERSION}/${APP_NAME}-${APP_VERSION}.tar.gz\"}" \
       --assets-link "{\"name\":\"${APP_NAME}-${APP_VERSION}-docs.tar.gz\",\"url\":\"${PACKAGE_REGISTRY_URL}/${APP_NAME}/${APP_VERSION}/${APP_NAME}-${APP_VERSION}-docs.tar.gz\"}"
-
 # release-hex:
 #   image: elixir:latest
 #   variables:

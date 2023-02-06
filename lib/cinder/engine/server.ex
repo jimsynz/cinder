@@ -12,7 +12,12 @@ defmodule Cinder.Engine.Server do
     Engine.TransitionBuilder,
     Engine.TransitionExecutor,
     Route,
-    Route.Matcher
+    Route.Matcher,
+    Template.Assigns,
+    Template.Render,
+    Template.Rendered.AssignCompose,
+    Template.Rendered.SlotCompose,
+    Template.Rendered.Static
   }
 
   alias Plug.Conn
@@ -20,6 +25,7 @@ defmodule Cinder.Engine.Server do
 
   import Macros
   require Logger
+  require Assigns
 
   @doc false
   @spec start_link(module, Engine.request_id()) :: GenServer.on_start()
@@ -34,10 +40,15 @@ defmodule Cinder.Engine.Server do
 
   @impl true
   def handle_call({:render_once, conn}, _from, state) do
+    html =
+      state
+      |> render(true)
+      |> Render.execute(Assigns.init(), Assigns.init(), Assigns.init())
+
     conn =
       conn
       |> Conn.put_resp_content_type("text/html")
-      |> Conn.send_resp(state.http_status, render(state, true))
+      |> Conn.send_resp(state.http_status, html)
 
     {:reply, conn, state, timeout(state.app)}
   end
@@ -175,31 +186,37 @@ defmodule Cinder.Engine.Server do
     |> then(&(&1 * 1_000))
   end
 
+  # defp render(state, include_layout)
   defp render(state, false) do
     state.current_routes
     |> Enum.reverse()
-    |> Enum.reduce("", fn route, html ->
-      assigns = Route.assigns(route)
-      state_template = route.module.template(route.state)
-      html = state_template.(Map.put(assigns, :slots, %{default: html}))
-      base_template = route.module.template(:base)
-      base_template.(Map.put(assigns, :slots, %{default: html}))
+    |> Enum.reduce(Static.init([]), fn route, inner ->
+      assigns =
+        route
+        |> Route.assigns()
+        |> Assigns.init()
+
+      state_template =
+        route.state
+        |> route.module.template()
+        |> SlotCompose.init(inner)
+
+      :base
+      |> route.module.template()
+      |> SlotCompose.init(state_template)
+      |> AssignCompose.init(assigns)
     end)
   end
 
   defp render(state, true) do
-    html = render(state, false)
+    inner = render(state, false)
+    layout = Extension.get_persisted(state.app, :cinder_layout)
+    template = layout.template()
+    assigns = Assigns.init(cinder_request_id: state.request_id)
 
-    assigns = %{
-      slots: %{
-        default: "<div data=\"cinder-main\">#{html}</div>"
-      },
-      cinder_request_id: state.request_id
-    }
-
-    state.app
-    |> Extension.get_persisted(:cinder_layout)
-    |> apply(:render, [assigns])
+    template
+    |> AssignCompose.init(assigns)
+    |> SlotCompose.init(inner)
   end
 
   defp execute_transition(state) do
@@ -218,7 +235,10 @@ defmodule Cinder.Engine.Server do
   defp maybe_broadcast_changes(state) when state.sockets == [], do: state
 
   defp maybe_broadcast_changes(state) do
-    html = render(state, false)
+    html =
+      state
+      |> render(false)
+      |> Render.execute(Assigns.init(), Assigns.init(), Assigns.init())
 
     for pid <- state.sockets do
       send(pid, {:rerender, html})

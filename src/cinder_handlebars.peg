@@ -1,0 +1,178 @@
+template <- (doctype / comment / component / tag / handlebars / text)*;
+
+%% Parsing components
+
+component <- content_component / void_component;
+
+content_component <- tag_start:component_tag_start content:component_block tag_end:component_tag_end
+  `
+    {component_start, Name, Attributes} = proplists:get_value(tag_start, Node),
+    {component_end, Name} = proplists:get_value(tag_end, Node),
+    Content = proplists:get_value(content, Node),
+    {component, Name, Attributes, Content}
+  `;
+
+void_component <- '<' space? component_alias space? attributes? space? '/>'
+  `{component, lists:nth(3, Node), lists:nth(5, Node)}`;
+
+component_tag_start <- '<' space? component_alias space? attributes? space? '>'
+  `{component_start, lists:nth(3, Node), lists:nth(5, Node)}`;
+
+component_tag_end <- '</' space? component_alias space? '>'
+  `{component_end, lists:nth(3, Node)}`;
+
+component_alias <- head:component_alias_segment tail:(('.' / '::') component_alias)*
+  `
+    Head = proplists:get_value(head, Node),
+    Tail = lists:map(fun([_, E]) -> E end, proplists:get_value(tail, Node)),
+    [Head | Tail]
+  `;
+
+component_alias_segment <- [A-Z] [a-zA-Z0-9_]* `iolist_to_binary(Node)`;
+
+component_block <- component_slot* / template;
+
+component_slot <- head:component_slot_start content:template? tail:component_slot_end
+  `
+    {slot_start, Name} = proplists:get_value(head, Node),
+    {slot_end, Name} = proplists:get_value(tail, Node),
+    Content = proplists:get_value(content, Node),
+    {slot, Name, Content}
+  `;
+
+component_slot_start <- '<' space? ':' space? ident space? '>'
+  `{slot_start, lists:nth(5, Node)}`;
+
+component_slot_end <- '</' space? ':' space? ident space? '>'
+  `{slot_end, lists:nth(5, Node)}`;
+
+%% Parsing HTML tags and attributes:
+
+tag <- content_tag / void_tag;
+
+content_tag <- tag_start:content_tag_start content:template? tag_end:content_tag_end
+  `
+    {element_start, Name, Attributes} = proplists:get_value(tag_start, Node),
+    Content = proplists:get_value(content, Node),
+    {element_end, Name} = proplists:get_value(tag_end, Node),
+    {element, Name, Attributes, Content}
+  `;
+
+content_tag_start <- '<' space? ident space? attributes? space? '>'
+  `{element_start, lists:nth(3, Node), lists:nth(5, Node)}`;
+content_tag_end <- '</' space? ident space? '>' `{element_end, lists:nth(3, Node)}`;
+
+void_tag <- '<' space? ident space? attributes? space? '/>'
+  `{element, lists:nth(3, Node), lists:nth(5, Node)}`;
+
+attributes <- head:attribute tail:(space attribute)*
+  `
+    Head = proplists:get_value(head, Node),
+    Rest = lists:map(fun([_, A]) -> A end, proplists:get_value(tail, Node)),
+    [Head | Rest]
+  `;
+attribute <- attribute_with_value / attribute_simple;
+
+attribute_with_value <- name:ident space? '=' space? value:(string / handlebars_expr)
+  `
+    Name = proplists:get_value(name, Node),
+    Value = proplists:get_value(value, Node),
+    {Name, Value}
+  `;
+attribute_simple <- ident `iolist_to_binary(Node)`;
+
+doctype <- ('<!doctype'  / '<!DOCTYPE') chars:(!">" .)* '>' `{doctype, iolist_to_binary(proplists:get_value(chars, Node))}`;
+comment <- '<!--' chars:(!'-->' .)+ '-->' `{comment, iolist_to_binary(proplists:get_value(chars, Node))}`;
+
+%% Handlebars
+
+handlebars <- handlebars_expr / handlebars_safe_expr / handlebars_comment / handlebars_block;
+handlebars_expr <- (!('{{!' / '{{{' / '{{#' / '{{else}}') '{{') space? expr space? '}}' `{expr, lists:nth(3, Node)}`;
+handlebars_safe_expr <- '{{{' space? expr space? '}}}' `{safe_expr, lists:nth(3, Node)}`;
+handlebars_comment <-  ('{{!--' (!'--}}' .)* '--}}') / ('{{!' (!'}}' .)* '}}') `comment`;
+
+handlebars_block <- block_start:handlebars_block_start positive:template negative:('{{else}}' template)? block_end:handlebars_block_end
+  `
+    {block_start, Name, Args, Params} = proplists:get_value(block_start, Node),
+    {block_end, Name} = proplists:get_value(block_end, Node),
+    Positive = proplists:get_value(positive, Node),
+    Negative = proplists:get_value(negative, Node),
+    case length(Negative) of
+      0 -> {block, Name, Args, Positive, [], Params};
+      _ -> {block, Name, Args, Positive, lists:nth(2, Negative), Params}
+    end
+  `;
+
+handlebars_block_start <- '{{#' name:identifier args:(space handlebars_block_arg)* params:handlebars_block_params? space? '}}'
+  `
+    Name = proplists:get_value(name, Node),
+    Args = lists:map(fun([_, E]) -> E end, proplists:get_value(args, Node)),
+    Params = proplists:get_value(params, Node),
+    {block_start, Name, Args, Params}
+  `;
+
+handlebars_block_arg <- (!'as' helper_arg) `lists:nth(2, Node)`;
+
+handlebars_block_params <- space 'as' space '|' space? params:(identifier (space identifier)*)? space? '|'
+  `
+    Params = lists:flatten(proplists:get_value(params, Node)),
+    lists:filter(fun(E) -> is_atom(E) end, Params)
+  `;
+
+handlebars_block_end <- '{{/' identifier '}}' `{block_end, lists:nth(2, Node)}`;
+
+base_expr <- literal / path / identifier / sub_expr / at_identifier;
+sub_expr <- '(' space? expr space? ')' `{expr, lists:nth(3, Node)}`;
+expr <- helper / base_expr;
+
+helper <- name:identifier args:(space helper_arg)+
+  `
+    Name = proplists:get_value(name, Node),
+    Args = lists:map(fun([_, E]) -> E end, proplists:get_value(args, Node)),
+    {Name, Args}
+  `;
+
+helper_arg <- helper_arg_hash / helper_arg_plain;
+helper_arg_plain <- base_expr;
+helper_arg_hash <- name:identifier '=' value:base_expr
+  `
+    Name = proplists:get_value(name, Node),
+    Value = proplists:get_value(value, Node),
+    {'=', Name, Value}
+  `;
+
+identifier <- ident `binary_to_atom(Node)`;
+at_identifier <- '@' identifier `{'@', lists:nth(2, Node)}`;
+path <- head:(identifier / at_identifier) tail:(('.' / '/') path_element)+
+  `
+    Head = proplists:get_value(head, Node),
+    Tail = lists:map(fun([_, E]) -> E end, proplists:get_value(tail, Node)),
+
+    {path, [Head | Tail]}
+  `;
+
+path_element <- identifier / literal_segment;
+literal_segment <- '[' space? literal space? ']' `lists:nth(3, Node)`;
+
+literal <- boolean_true / boolean_false / float / integer / string;
+boolean_true <- 'true' `true`;
+boolean_false <- 'false' `false`;
+integer <- '0' / ([1-9] [0-9]*)
+  `
+    Number = iolist_to_binary(Node),
+    binary_to_integer(Number)
+  `;
+float <- [0-9]+ '.' [0-9]+
+  `
+    Number = iolist_to_binary(Node),
+    binary_to_float(Number)
+  `;
+string <- string_double / string_single;
+string_double <- '"' chars:(!'"' ("\\\\" / '\\"' / .))* '"' `iolist_to_binary(proplists:get_value(chars, Node))`;
+string_single <- "'" chars:(!"'" ("\\\\" / "\\'" / .))* "'" `iolist_to_binary(proplists:get_value(chars, Node))`;
+
+text <- (!('<' / '{{') .)+ `{text, lists:map(fun([_, T]) -> T end, Node)}`;
+
+
+ident <- [a-zA-Z] [a-zA-Z0-9_-]* `iolist_to_binary(Node)`;
+space <- [ \t\n\s\r]* ~;

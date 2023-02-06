@@ -19,7 +19,7 @@ defmodule Example.App do
     end
 
     templates do
-      # base_path(__ENV__.file |> Path.join("../templates") |> Path.expand())
+      base_path(__ENV__.file |> Path.join("../templates") |> Path.expand())
     end
 
     secret_key_base(&Application.fetch_env(:cinder, &1))

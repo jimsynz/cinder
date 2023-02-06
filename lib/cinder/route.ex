@@ -1,7 +1,7 @@
 defmodule Cinder.Route do
   defstruct state: :initial, data: nil, module: nil, params: %{}
 
-  alias Cinder.{Engine, Route, Route.Segment}
+  alias Cinder.{Engine, Route, Route.Segment, Template.Render}
 
   import Cinder.Engine.Macros
 
@@ -41,7 +41,7 @@ defmodule Cinder.Route do
 
   @callback assigns(data) :: assigns
   @callback transition_complete(Engine.request_id(), route_state, data) :: :ok | {:error, any}
-  @callback template(route_state) :: (assigns -> String.t())
+  @callback template(route_state | :base) :: Render.t()
 
   @doc """
   Initialise a route.
@@ -116,19 +116,6 @@ defmodule Cinder.Route do
   def for_compare(state), do: {state.params, state.module}
 
   @doc """
-  Render a template for the given route.
-  """
-  @spec render(t, slots :: %{required(atom) => String.t()}) :: String.t() | no_return
-  def render(route, slots) do
-    assigns =
-      route
-      |> assigns()
-      |> Map.put(:slots, slots)
-
-    route.module.template(route.state, assigns)
-  end
-
-  @doc """
   Complete an asynchronous route transition.
 
   This is the underlying implementation called by the generated
@@ -148,8 +135,6 @@ defmodule Cinder.Route do
       |> Macro.expand(__CALLER__)
 
     quote location: :keep do
-      require EEx
-
       import Cinder.Route.Macros
 
       @behaviour Route

@@ -16,6 +16,7 @@ defmodule Cinder.MixProject do
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
+      compilers: [:neotoma | Mix.compilers()],
       preferred_cli_env: [ci: :test],
       dialyzer: [
         plt_add_apps: [:mix, :ex_unit],
@@ -44,16 +45,23 @@ defmodule Cinder.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
+      {:phoenix_html, "~> 3.2"},
       {:phoenix_pubsub, "~> 2.1"},
       {:plug, "~> 1.14"},
       {:plug_cowboy, "~> 2.6"},
       {:spark, "~> 0.3.1"},
       {:credo, "~> 1.6", only: ~w[dev test]a, runtime: false},
-      {:doctor, "~> 0.21", only: ~w[dev test]a, runtime: false},
+      # {:doctor, "~> 0.21", only: ~w[dev test]a, runtime: false},
+      {:doctor, github: "akoutmos/doctor", only: ~w[dev test]a, runtime: false},
       {:dialyxir, "~> 1.2", only: ~w[dev test]a, runtime: false},
       {:esbuild, "~> 0.6.0", only: ~w[dev test]a},
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
-      {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false}
+      {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
+      {:neotoma_compiler,
+       git: "https://gitlab.com/jimsy/neotoma_compiler.git",
+       branch: :main,
+       only: ~w[dev test]a,
+       runtime: false}
     ]
   end
 

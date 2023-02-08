@@ -51,7 +51,7 @@ defmodule Cinder.MixProject do
       {:phoenix_pubsub, "~> 2.1"},
       {:plug, "~> 1.14"},
       {:plug_cowboy, "~> 2.6"},
-      {:spark, "~> 0.3.1"},
+      {:spark, "~> 0.4.0"},
       {:credo, "~> 1.6", only: ~w[dev test]a, runtime: false},
       # {:doctor, "~> 0.21", only: ~w[dev test]a, runtime: false},
       {:doctor, github: "akoutmos/doctor", only: ~w[dev test]a, runtime: false},

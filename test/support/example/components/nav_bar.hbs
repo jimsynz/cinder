@@ -1,0 +1,24 @@
+<nav>
+  <div class="container flex flex-wrap items-center justify-between mx-auto">
+    <ul class="flex flex-row p-4 space-x-8 mt-0 font-medium border-0">
+      <li>
+        <Cinder::Components::Link to={{url_for @request "app.slow" }}
+                                  class="block py-2 pl-3 pr-4 hover:text-blue-700 p-0">
+          Slow route
+        </Cinder::Components::Link>
+      </li>
+      <li>
+        <Cinder::Components::Link to={{url_for @request "app.posts" }}
+                                  class="block py-2 pl-3 pr-4 hover:text-blue-700 p-0">
+          Posts
+        </Cinder::Components::Link>
+      </li>
+      <li>
+        <Cinder::Components::Link to={{url_for @request "app.stuck" }}
+                                  class="block py-2 pl-3 pr-4 hover:text-blue-700 p-0">
+          Stuck route
+        </Cinder::Components::Link>
+      </li>
+    </ul>
+  </div>
+</nav>

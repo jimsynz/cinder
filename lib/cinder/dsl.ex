@@ -62,7 +62,9 @@ defmodule Cinder.Dsl do
           describe: "Templating options",
           schema: [
             base_path: [
-              type: {:or, [:string, {:struct, Path}]}
+              type: {:or, [:string, {:struct, Path}]},
+              default: "templates",
+              doc: "The template path, relative to the OTP application working directory"
             ]
           ]
         },
@@ -79,6 +81,24 @@ defmodule Cinder.Dsl do
               type: :pos_integer,
               doc: "How long to wait for a second request before shutting down the server",
               default: 10
+            ]
+          ]
+        },
+        %Section{
+          name: :assets,
+          describe: "Settings related to asset generation",
+          schema: [
+            source_path: [
+              type: {:or, [:string, {:struct, Path}]},
+              default: "assets",
+              doc:
+                "The source path of the assets, relative to the OTP application working directory"
+            ],
+            target_path: [
+              type: {:or, [:string, {:struct, Path}]},
+              default: "priv/static",
+              doc:
+                "The target path of the assets, relative to the OTP application working directory"
             ]
           ]
         }

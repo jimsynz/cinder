@@ -29,6 +29,11 @@ defmodule Cinder.Component.Dsl do
             type: :boolean,
             required: false,
             default: true
+          ],
+          allow_nil?: [
+            type: :boolean,
+            required: false,
+            default: true
           ]
         ]
       }
@@ -51,6 +56,10 @@ defmodule Cinder.Component.Dsl do
           required?: [
             type: :boolean,
             default: true
+          ],
+          trim?: [
+            type: :boolean,
+            default: false
           ]
         ]
       }

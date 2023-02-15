@@ -2,13 +2,11 @@ defmodule Cinder.Template.Rendered.VoidElement do
   @moduledoc """
   A void HTML element.
   """
-  defstruct name: nil, attributes: [], renderer: nil
+  defstruct name: nil, attributes: [], optimised?: false
 
   alias Cinder.{
-    Template,
     Template.Assigns,
     Template.Compilable,
-    Template.Macros,
     Template.Render,
     Template.Rendered.Attribute,
     Template.Rendered.Static,
@@ -18,7 +16,7 @@ defmodule Cinder.Template.Rendered.VoidElement do
   @type t :: %VoidElement{
           name: String.t(),
           attributes: [Attribute.t()],
-          renderer: nil | Template.renderer()
+          optimised?: boolean
         }
 
   @type render_result :: iodata | Render.render_list()
@@ -59,10 +57,7 @@ defmodule Cinder.Template.Rendered.VoidElement do
 
     @doc false
     @spec optimise(VoidElement.t(), Macro.Env.t()) :: VoidElement.t()
-    def optimise(element, _env) when is_function(element.renderer, 3),
-      do: element
-
-    def optimise(%{renderer: {:fn, _, _}} = element, _env), do: element
+    def optimise(element, _env) when element.optimised? == true, do: element
 
     def optimise(element, env) do
       if dynamic?(element) do
@@ -71,17 +66,7 @@ defmodule Cinder.Template.Rendered.VoidElement do
           |> Enum.reverse()
           |> Enum.map(&Compilable.optimise(&1, env))
 
-        element = %{element | attributes: attributes}
-
-        fun =
-          quote context: env.module, generated: true do
-            fn assigns, slots, locals ->
-              unquote(Macros.escape(element))
-              |> VoidElement.render(&Render.execute(&1, assigns, slots, locals))
-            end
-          end
-
-        %{element | renderer: fun}
+        %{element | attributes: attributes, optimised?: true}
       else
         element
         |> Render.render()
@@ -94,14 +79,12 @@ defmodule Cinder.Template.Rendered.VoidElement do
   defimpl Render do
     @doc false
     @spec render(VoidElement.t()) :: Render.render_list()
-    def render(element) do
-      VoidElement.render(element, &Render.render/1)
-    end
+    def render(element),
+      do: VoidElement.render(element, &Render.render/1)
 
     @doc false
     @spec execute(VoidElement.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
-    def execute(element, assigns, slots, locals) do
-      element.renderer.(assigns, slots, locals)
-    end
+    def execute(element, assigns, slots, locals),
+      do: VoidElement.render(element, &Render.execute(&1, assigns, slots, locals))
   end
 end

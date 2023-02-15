@@ -11,10 +11,11 @@ defmodule Cinder.Template do
   @spec __using__(any) :: Macro.t()
   defmacro __using__(_opts) do
     quote do
-      import Cinder.Template.Macros
-      import Cinder.Template.ExpressionHelpers
-      import Cinder.Template.BlockHelpers
       import Cinder.Template.Assigns, only: :macros
+      import Cinder.Template.Helpers.Block
+      import Cinder.Template.Helpers.Expression
+      import Cinder.Template.Helpers.Route
+      import Cinder.Template.Macros
     end
   end
 

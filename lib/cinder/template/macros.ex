@@ -55,6 +55,21 @@ defmodule Cinder.Template.Macros do
     {:%{}, [], escaped}
   end
 
+  def escape(%{} = val) do
+    escaped =
+      val
+      |> Map.to_list()
+      |> Enum.map(fn
+        {key, {:fn, _, _} = value} ->
+          {escape(key), value}
+
+        {key, value} ->
+          {escape(key), escape(value)}
+      end)
+
+    {:%{}, [], escaped}
+  end
+
   def escape(other) when is_list(other), do: Enum.map(other, &escape(&1))
   def escape(other), do: Macro.escape(other)
 end

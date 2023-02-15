@@ -2,7 +2,7 @@ defmodule Cinder.Template.Rendered.RawExpression do
   @moduledoc """
   A Handlebars expression to be interpreted into the template.
   """
-  defstruct expr: nil
+  defstruct expr: nil, optimised?: false
 
   alias Cinder.{
     Template,
@@ -13,7 +13,8 @@ defmodule Cinder.Template.Rendered.RawExpression do
   }
 
   @type t :: %RawExpression{
-          expr: nil | Macro.t() | Template.renderer()
+          expr: nil | Macro.t() | Template.renderer(),
+          optimised?: boolean
         }
 
   @doc "Initialise an expression containing the given Elixir AST"
@@ -31,19 +32,19 @@ defmodule Cinder.Template.Rendered.RawExpression do
 
     @doc false
     @spec optimise(RawExpression.t(), Macro.Env.t()) :: RawExpression.t()
-    def optimise(expr, _env) when is_function(expr.expr, 3), do: expr
-
-    def optimise(%{expr: {:fn, _, _}} = expr, _env), do: expr
+    def optimise(expr, _env) when expr.optimised? == true, do: expr
 
     def optimise(expr, env) do
+      inner = expr.expr
+
       fun =
         quote context: env.module, generated: true do
           fn assigns, slots, locals ->
-            unquote(expr.expr)
+            unquote(inner)
           end
         end
 
-      %{expr | expr: fun}
+      %{expr | expr: fun, optimised?: true}
     end
   end
 

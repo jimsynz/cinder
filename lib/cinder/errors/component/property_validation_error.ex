@@ -5,11 +5,13 @@ defmodule Cinder.Errors.Component.PropertyValidationError do
 
   defexception ~w[component property type file line col]a
   alias __MODULE__
+  alias Cinder.Component.PropType
 
   @type t :: %PropertyValidationError{
           __exception__: true,
           component: module,
           property: atom,
+          type: PropType.type(),
           file: nil | binary,
           line: nil | non_neg_integer(),
           col: nil | non_neg_integer()

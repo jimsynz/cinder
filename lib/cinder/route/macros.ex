@@ -65,7 +65,7 @@ defmodule Cinder.Route.Macros do
       end
 
       @doc false
-      @spec template(Route.route_state() | :bas) :: Template.Render.t()
+      @spec template(Route.route_state() | :base) :: Template.Render.t()
       for {state, path} <- state_templates do
         def template(unquote(state)) do
           compile_file(unquote(path))

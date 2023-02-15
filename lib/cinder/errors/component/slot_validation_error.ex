@@ -1,30 +1,30 @@
-defmodule Cinder.Errors.Component.MissingPropertyError do
+defmodule Cinder.Errors.Component.SlotValidationError do
   @moduledoc """
-  The error raised when an expected property is missing from a component invocation.
+  The error raised when a passed-in slot is not of the type specified by the component definition.
   """
 
-  defexception ~w[component property file line col]a
+  defexception ~w[component slot type file line col]a
   alias __MODULE__
+  alias Cinder.Component.PropType
 
-  @type t :: %MissingPropertyError{
+  @type t :: %SlotValidationError{
           __exception__: true,
           component: module,
-          property: atom,
+          slot: atom,
+          type: PropType.type(),
           file: nil | binary,
           line: nil | non_neg_integer(),
           col: nil | non_neg_integer()
         }
 
-  @doc false
   @impl true
   @spec exception(keyword) :: t
   def exception(opts) when is_list(opts) do
     opts
-    |> Keyword.take(~w[component property file line col]a)
-    |> then(&struct!(MissingPropertyError, &1))
+    |> Keyword.take(~w[component slot type file line col]a)
+    |> then(&struct!(SlotValidationError, &1))
   end
 
-  @doc false
   @impl true
   @spec message(t) :: binary
   def message(error) do
@@ -36,16 +36,16 @@ defmodule Cinder.Errors.Component.MissingPropertyError do
         {file, line, col} -> "at #{file}:#{line}:#{col}"
       end
 
-    "Required property `#{error.property}` missing when calling component `#{inspect(error.component)}` #{location}"
+    "Slot `#{error.slot}` did not match type `#{inspect(error.type)}` when calling component `#{inspect(error.component)}` #{location}"
   end
 
   defimpl Plug.Exception do
     @doc false
-    @spec actions(MissingPropertyError.t()) :: []
+    @spec actions(SlotValidationError.t()) :: []
     def actions(_), do: []
 
     @doc false
-    @spec status(MissingPropertyError.t()) :: non_neg_integer()
+    @spec status(SlotValidationError.t()) :: non_neg_integer()
     def status(_), do: 500
   end
 end

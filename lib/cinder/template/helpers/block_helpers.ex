@@ -1,10 +1,9 @@
-defmodule Cinder.Template.BlockHelpers do
+defmodule Cinder.Template.Helpers.Block do
   @moduledoc """
   The built-in block helpers.
   """
   alias Cinder.Template.{Render, Rendered.LocalCompose}
   import Cinder.Template.Macros
-  import Cinder.Template.Assigns, only: :macros
 
   # Things that Handlebars considers falsy.
   @falsy [nil, false, "", [], 0]

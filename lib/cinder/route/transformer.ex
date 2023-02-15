@@ -1,8 +1,9 @@
+# credo:disable-for-this-file Credo.Check.Refactor.Apply
 defmodule Cinder.Route.Transformer do
   @moduledoc false
   use Spark.Dsl.Transformer
 
-  alias Cinder.{Dsl.Route, Route.DynamicSegment, Route.StaticSegment}
+  alias Cinder.{Dsl.Info, Dsl.Route, Route.DynamicSegment, Route.StaticSegment}
   alias Spark.{Dsl, Dsl.Transformer, Error.DslError}
 
   @doc false
@@ -23,7 +24,9 @@ defmodule Cinder.Route.Transformer do
     namespace = Module.concat(app, "Route")
     cinder_routing_table = build_routing_table(dsl_state)
     cinder_route_modules = get_modules_from_routing_table(cinder_routing_table)
-    cinder_template_base_path = get_template_base_path(dsl_state)
+    cinder_template_base_path = get_path_option(dsl_state, :cinder_templates_base_path!)
+    cinder_assets_source_path = get_path_option(dsl_state, :cinder_assets_source_path!)
+    cinder_assets_target_path = get_path_option(dsl_state, :cinder_assets_target_path!)
 
     with :ok <- assert_no_duplicate_route_modules(cinder_route_modules) do
       dsl_state =
@@ -33,6 +36,8 @@ defmodule Cinder.Route.Transformer do
         |> Transformer.persist(:cinder_app_route, Module.concat(namespace, "App"))
         |> Transformer.persist(:cinder_route_namespace, namespace)
         |> Transformer.persist(:cinder_template_base_path, cinder_template_base_path)
+        |> Transformer.persist(:cinder_assets_source_path, cinder_assets_source_path)
+        |> Transformer.persist(:cinder_assets_target_path, cinder_assets_target_path)
         |> Transformer.eval(
           [
             cinder_route_modules: cinder_route_modules,
@@ -85,22 +90,19 @@ defmodule Cinder.Route.Transformer do
     end
   end
 
-  defp get_template_base_path(dsl_state) do
-    dsl_state
-    |> Transformer.get_option([:templates], :base_path)
+  defp get_path_option(dsl_state, config_name) do
+    Info
+    |> apply(config_name, [dsl_state])
+    |> to_string()
     |> case do
-      path when is_binary(path) ->
-        path
+      "/" <> _rest = absolute ->
+        absolute
 
-      path when is_struct(path, Path) ->
-        path
+      relative ->
+        otp_app = Transformer.get_persisted(dsl_state, :otp_app)
 
-      nil ->
-        dsl_state
-        |> Transformer.get_persisted(:file)
-        |> Path.join("../templates")
+        Application.app_dir(otp_app, relative)
     end
-    |> Path.expand()
   end
 
   defp build_routing_table(dsl_state) do

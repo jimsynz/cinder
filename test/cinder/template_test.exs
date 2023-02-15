@@ -262,7 +262,7 @@ defmodule Cinder.TemplateTest do
   end
 
   describe "components" do
-    defmodule BasicVoidComponent do
+    defmodule BasicComponent do
       @moduledoc false
       use Cinder.Component
 
@@ -271,28 +271,43 @@ defmodule Cinder.TemplateTest do
         {{#if (has_slot "default")}}
           {{yield "default"}}
         {{else}}
-          Basic void component
+          Basic component
         {{/if}}
         """
       end
     end
 
+    defmodule NestedComponents do
+      @moduledoc false
+      use Cinder.Component
+
+      def render do
+        ~B"""
+        <BasicComponent>Yielded by basic component</BasicComponent>
+        """
+      end
+    end
+
     test "void components with no arguments" do
-      assert execute(~B"<BasicVoidComponent />") =~ ~r/Basic void component/
+      assert execute(~B"<BasicComponent />") =~ ~r/Basic component/
     end
 
     test "component with no contents" do
-      assert execute(~B"<BasicVoidComponent></BasicVoidComponent>") =~ ~r/Basic void component/
+      assert execute(~B"<BasicComponent></BasicComponent>") =~ ~r/Basic component/
     end
 
     test "component with named slot" do
-      assert execute(~B"<BasicVoidComponent><:default>Named slot</:default></BasicVoidComponent>") =~
+      assert execute(~B"<BasicComponent><:default>Named slot</:default></BasicComponent>") =~
                ~r/Named slot/
     end
 
     test "component with implicit slot" do
-      assert execute(~B"<BasicVoidComponent>Implicit slot</BasicVoidComponent>") =~
+      assert execute(~B"<BasicComponent>Implicit slot</BasicComponent>") =~
                ~r/Implicit slot/
+    end
+
+    test "nested components" do
+      assert execute(~B"<NestedComponents />") =~ ~r/Yielded by basic component/
     end
   end
 

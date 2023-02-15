@@ -2,13 +2,17 @@ defmodule Cinder.Template.Rendered.Document do
   @moduledoc """
   An HTML document.
   """
-  defstruct file: nil, line: 1, column: 1, children: [], renderer: nil, args: []
+  defstruct file: nil,
+            line: 1,
+            column: 1,
+            children: [],
+            merge_locals: nil,
+            args: [],
+            optimised?: false
 
   alias Cinder.{
-    Template,
     Template.Assigns,
     Template.Compilable,
-    Template.Macros,
     Template.Render,
     Template.Rendered.Document,
     Template.Rendered.Static
@@ -19,9 +23,14 @@ defmodule Cinder.Template.Rendered.Document do
           line: non_neg_integer(),
           column: non_neg_integer(),
           children: [Render.t()],
-          renderer: Template.renderer() | nil,
-          args: Keyword.t(any)
+          merge_locals: nil | (Assigns.t() -> Assigns.t()),
+          args: Keyword.t(any),
+          optimised?: boolean
         }
+
+  @doc false
+  @spec init(keyword) :: t
+  def init(attrs), do: struct(Document, attrs)
 
   defimpl Compilable do
     @doc false
@@ -33,29 +42,27 @@ defmodule Cinder.Template.Rendered.Document do
     def dynamic?(document), do: Enum.any?(document.children, &Compilable.dynamic?/1)
 
     @spec optimise(Document.t(), Macro.Env.t()) :: Document.t() | Static.t()
-    def optimise(document, _env) when is_function(document.renderer, 3), do: document
-
-    def optimise(%{renderer: {:fn, _, _}} = document, _env), do: document
+    def optimise(document, _env) when document.optimised? == true, do: document
 
     def optimise(document, env) do
       children =
         document.children
         |> Enum.reverse()
         |> Enum.map(&Compilable.optimise(&1, env))
-        |> Static.optimise_sequence()
+        |> Static.optimise_sequences()
+        |> Enum.map(&Compilable.optimise(&1, env))
 
       fun =
         quote context: env.module, generated: true do
-          fn assigns, slots, locals ->
-            locals = assign(locals, unquote(document.args))
-
-            for child <- unquote(Macros.escape(children)) do
-              Render.execute(child, assigns, slots, locals)
-            end
+          fn locals ->
+            unquote(document.args)
+            |> Enum.reduce(locals, fn {key, value}, locals ->
+              Assigns.push(locals, key, value)
+            end)
           end
         end
 
-      %{document | children: children, renderer: fun}
+      %{document | children: children, merge_locals: fun, optimised?: true}
     end
   end
 
@@ -69,6 +76,12 @@ defmodule Cinder.Template.Rendered.Document do
 
     @doc false
     @spec execute(Document.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
-    def execute(document, assigns, slots, locals), do: document.renderer.(assigns, slots, locals)
+    def execute(document, assigns, slots, locals) do
+      locals = document.merge_locals.(locals)
+
+      for child <- document.children do
+        Render.execute(child, assigns, slots, locals)
+      end
+    end
   end
 end

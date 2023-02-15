@@ -9,7 +9,7 @@ config :git_ops,
 
 config :esbuild,
   version: "0.16.4",
-  default: [
+  prod: [
     args: ~w(ts/cinder.ts --bundle --target=es2016 --outdir=../priv/static),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}

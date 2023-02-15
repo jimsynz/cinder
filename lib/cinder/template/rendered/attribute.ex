@@ -3,7 +3,7 @@ defmodule Cinder.Template.Rendered.Attribute do
   An HTML attribute.
   """
 
-  defstruct name: nil, value: nil
+  defstruct name: nil, value: nil, optimised?: false
 
   alias Cinder.{
     Template,
@@ -16,7 +16,8 @@ defmodule Cinder.Template.Rendered.Attribute do
 
   @type t :: %Attribute{
           name: binary,
-          value: nil | binary | Macro.t() | Template.renderer()
+          value: nil | binary | Macro.t() | Template.renderer(),
+          optimised?: boolean
         }
 
   @doc false
@@ -35,11 +36,10 @@ defmodule Cinder.Template.Rendered.Attribute do
 
     @doc false
     @spec optimise(Attribute.t(), Macro.Env.t()) :: Attribute.t()
-    def optimise(attribute, _env) when is_function(attribute.value, 3), do: attribute
+    def optimise(attribute, _env) when attribute.optimised? == true, do: attribute
 
-    def optimise(%{value: {:fn, _, _}} = attribute, _env), do: attribute
-
-    def optimise(attribute, _env) when is_binary(attribute.value), do: attribute
+    def optimise(attribute, _env) when is_binary(attribute.value),
+      do: %{attribute | optimised?: true}
 
     def optimise(attribute, env) do
       fun =
@@ -58,7 +58,7 @@ defmodule Cinder.Template.Rendered.Attribute do
           end
         end
 
-      %{attribute | value: fun}
+      %{attribute | value: fun, optimised?: true}
     end
   end
 

@@ -1,10 +1,11 @@
-template <- (doctype / comment / component / tag / handlebars / text)*;
+template <- template_content*;
+template_content <- doctype / comment / component / tag / handlebars / text;
 
 %% Parsing components
 
 component <- content_component / void_component;
 
-content_component <- tag_start:component_tag_start content:component_block tag_end:component_tag_end
+content_component <- tag_start:component_tag_start content:component_block? tag_end:component_tag_end
   `
     {component_start, Name, Attributes} = proplists:get_value(tag_start, Node),
     {component_end, Name} = proplists:get_value(tag_end, Node),
@@ -30,9 +31,9 @@ component_alias <- head:component_alias_segment tail:(('.' / '::') component_ali
 
 component_alias_segment <- [A-Z] [a-zA-Z0-9_]* `iolist_to_binary(Node)`;
 
-component_block <- component_slot* / template;
+component_block <- (component_slot / template_content)+;
 
-component_slot <- head:component_slot_start content:template? tail:component_slot_end
+component_slot <- head:component_slot_start content:template_content* tail:component_slot_end
   `
     {slot_start, Name} = proplists:get_value(head, Node),
     {slot_end, Name} = proplists:get_value(tail, Node),

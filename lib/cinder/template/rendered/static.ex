@@ -21,15 +21,20 @@ defmodule Cinder.Template.Rendered.Static do
   Given a list of nodes, optimise any sequences of more than one static by
   coalescing them into one.
   """
-  @spec optimise_sequence([Render.t()]) :: [Render.t()]
-  def optimise_sequence(nodes), do: optimise_sequence(nodes, [])
-  defp optimise_sequence([], result), do: Enum.reverse(result)
+  @spec optimise_sequences([Render.t()]) :: [Render.t()]
+  def optimise_sequences(nodes) do
+    nodes
+    |> List.flatten()
+    |> optimise_sequences([])
+  end
 
-  defp optimise_sequence([%Static{static: next} | remaining], [%Static{static: last} | result]),
-    do: optimise_sequence(remaining, [Static.init([next, last]) | result])
+  defp optimise_sequences([], result), do: Enum.reverse(result)
 
-  defp optimise_sequence([next | remaining], result),
-    do: optimise_sequence(remaining, [next | result])
+  defp optimise_sequences([%Static{static: next} | remaining], [%Static{static: last} | result]),
+    do: optimise_sequences(remaining, [Static.init([next, last]) | result])
+
+  defp optimise_sequences([next | remaining], result),
+    do: optimise_sequences(remaining, [next | result])
 
   defimpl Compilable do
     @doc false
@@ -40,7 +45,7 @@ defmodule Cinder.Template.Rendered.Static do
     def dynamic?(_), do: false
 
     @spec optimise(Static.t(), Macro.Env.t()) :: Static.t()
-    def optimise(node, _env), do: node
+    def optimise(node, _env), do: %{node | static: List.flatten(node.static)}
   end
 
   defimpl Render do

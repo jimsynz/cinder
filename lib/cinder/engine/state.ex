@@ -1,6 +1,6 @@
 defmodule Cinder.Engine.State do
   @moduledoc false
-  alias Cinder.{Engine, Engine.State, Route}
+  alias Cinder.{Engine, Engine.State, Request, Route}
 
   defstruct app: nil,
             request_id: nil,
@@ -29,4 +29,18 @@ defmodule Cinder.Engine.State do
           status: status,
           http_status: pos_integer()
         }
+
+  @doc """
+  Convert engine state into a request which can be assigned.
+  """
+  @spec to_request(t) :: Request.t()
+  def to_request(state) when is_struct(state, State) do
+    %Request{
+      app: state.app,
+      request_id: state.request_id,
+      current_routes: state.current_routes,
+      current_route: state.current_routes |> List.last(),
+      pid: self()
+    }
+  end
 end

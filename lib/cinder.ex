@@ -21,9 +21,12 @@ defmodule Cinder do
 
   @doc false
   @spec handle_opts(any) :: Macro.t()
-  def handle_opts(_opts) do
+  def handle_opts(opts) do
     quote location: :keep do
-      @persist {:file, __ENV__.file}
+      case Keyword.fetch(unquote(opts), :otp_app) do
+        {:ok, app} -> @persist {:otp_app, app}
+        :error -> raise "You must specify the OTP application in the `use Cinder` statement."
+      end
     end
   end
 end

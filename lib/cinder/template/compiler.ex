@@ -19,29 +19,34 @@ defmodule Cinder.Template.Compiler do
     Rendered.Document,
     Rendered.Element,
     Rendered.Expression,
+    Rendered.Property,
     Rendered.RawExpression,
     Rendered.Static,
     Rendered.VoidElement
   }
 
   defguardp is_element(node) when is_struct(node, Element) or is_struct(node, VoidElement)
+  defguardp is_component(node) when is_struct(node, Component)
 
   @doc """
   Compile the template into data structure (with quoted functions ready for unquoting).
   """
   @spec compile(binary, Macro.Env.t(), binary, non_neg_integer(), non_neg_integer()) :: Render.t()
   def compile(template, env, file \\ "nofile", line \\ 1, column \\ 1) do
+    module = env.module
+
     args =
       env
       |> Macro.Env.vars()
       |> Enum.map(fn {arg_name, _} ->
         {arg_name,
          quote context: env.module do
-           var!(unquote({arg_name, [], env.module}))
+           var!(unquote({arg_name, [], module}))
          end}
       end)
 
-    document = %Document{file: Macro.expand(file, env), line: line, column: column, args: args}
+    document =
+      Document.init(file: Macro.expand(file, env), line: line, column: column, args: args)
 
     template
     |> :cinder_handlebars.parse()
@@ -51,15 +56,20 @@ defmodule Cinder.Template.Compiler do
         |> compile_template(ast, [], env)
         |> Compilable.optimise(env)
 
-      {_, _, {{:line, l}, {:column, c}}} = unparsed ->
+      {_, unparsed, {{:line, l}, {:column, _}}} ->
         line = line + l
-        column = column + c
 
-        raise "Unable to compile template `#{file}` at line #{line}, column #{column}\n\n#{inspect(unparsed)}"
+        raise CompileError,
+          file: file,
+          line: line,
+          description: "Unable to compile template.\n\n#{unparsed}"
     end
   end
 
   defp compile_template(result, [], _, _env), do: result
+
+  defp compile_template(parent, [{:comment, _} | ast], opts, env),
+    do: compile_template(parent, ast, opts, env)
 
   defp compile_template(parent, [{:doctype, contents} | ast], opts, env) do
     parent
@@ -86,7 +96,7 @@ defmodule Cinder.Template.Compiler do
   defp compile_template(parent, [{:component, name, attrs, content} | ast], opts, env) do
     component =
       Component.init(name)
-      |> compile_template(Enum.map(attrs, &{:attr, &1}), opts, env)
+      |> compile_template(Enum.map(attrs, &{:attr, &1}), [:attr | opts], env)
       |> compile_template(content, opts, env)
 
     parent
@@ -121,19 +131,35 @@ defmodule Cinder.Template.Compiler do
     |> compile_template(ast, opts, env)
   end
 
-  defp compile_template(parent, [{:attr, {name, value}} | ast], opts, env)
-       when (is_binary(value) and is_element(parent)) or is_struct(parent, Component) do
-    parent
-    |> Compilable.add_child(Attribute.init(name, value), opts)
-    |> compile_template(ast, opts, env)
-  end
-
   defp compile_template(parent, [{:attr, {name, {:expr, _} = expr}} | ast], opts, env)
        when is_element(parent) do
     expr = compile_expr(expr, env)
 
     parent
     |> Compilable.add_child(Attribute.init(name, expr), opts)
+    |> compile_template(ast, opts, env)
+  end
+
+  defp compile_template(parent, [{:attr, {name, {:expr, _} = expr}} | ast], opts, env)
+       when is_component(parent) do
+    expr = compile_expr(expr, env)
+
+    parent
+    |> Compilable.add_child(Property.init(name, expr), opts)
+    |> compile_template(ast, opts, env)
+  end
+
+  defp compile_template(parent, [{:attr, {name, value}} | ast], opts, env)
+       when is_binary(value) and is_element(parent) do
+    parent
+    |> Compilable.add_child(Attribute.init(name, value), opts)
+    |> compile_template(ast, opts, env)
+  end
+
+  defp compile_template(parent, [{:attr, {name, value}} | ast], opts, env)
+       when is_binary(value) and is_component(parent) do
+    parent
+    |> Compilable.add_child(Property.init(name, value), opts)
     |> compile_template(ast, opts, env)
   end
 
@@ -223,8 +249,10 @@ defmodule Cinder.Template.Compiler do
   end
 
   defp compile_expr({:block, fun, args, _, _, bindings}, env) do
+    args = compile_args(args, env)
+
     quote generated: true, context: env.module do
-      unquote(fun)(unquote_splicing(compile_args(args, env)), unquote(bindings))
+      unquote(fun)(unquote_splicing(args), unquote(bindings))
     end
   end
 
@@ -252,8 +280,10 @@ defmodule Cinder.Template.Compiler do
   end
 
   defp compile_expr({:expr, {fun, args}}, env) when is_atom(fun) and is_list(args) do
+    args = compile_args(args, env)
+
     quote context: env.module, generated: true do
-      unquote(fun)(unquote_splicing(compile_args(args, env)))
+      unquote(fun)(unquote_splicing(args))
     end
   end
 
@@ -280,6 +310,9 @@ defmodule Cinder.Template.Compiler do
   defp compile_arg({:=, key, value}, env), do: {key, compile_arg(value, env)}
 
   defp compile_arg({:@, ident}, env) do
+    file = env.file
+    line = env.line
+
     quote context: env.module, generated: true do
       case Access.fetch(assigns, unquote(ident)) do
         {:ok, value} ->
@@ -288,13 +321,16 @@ defmodule Cinder.Template.Compiler do
         :error ->
           raise UnknownAssignError,
             assign: unquote(ident),
-            file: unquote(env.file),
-            line: unquote(env.line)
+            file: unquote(file),
+            line: unquote(line)
       end
     end
   end
 
   defp compile_arg({:path, [root | segments]}, env) do
+    file = env.file
+    line = env.line
+
     segments
     |> Enum.reduce(compile_arg(root, env), fn
       segment, parent when is_atom(segment) or is_binary(segment) ->
@@ -307,8 +343,8 @@ defmodule Cinder.Template.Compiler do
               raise IndexError,
                 parent: unquote(parent),
                 segment: unquote(segment),
-                file: unquote(env.file),
-                line: unquote(env.line)
+                file: unquote(file),
+                line: unquote(line)
           end
         end
 
@@ -322,8 +358,8 @@ defmodule Cinder.Template.Compiler do
               raise IndexError,
                 parent: unquote(parent),
                 segment: unquote(segment),
-                file: unquote(env.file),
-                line: unquote(env.line)
+                file: unquote(file),
+                line: unquote(line)
           end
         end
     end)
@@ -342,6 +378,9 @@ defmodule Cinder.Template.Compiler do
   end
 
   defp compile_arg(ident, env) when is_atom(ident) do
+    file = env.file
+    line = env.line
+
     quote context: env.module, generated: true do
       case Access.fetch(locals, unquote(ident)) do
         {:ok, value} ->
@@ -350,8 +389,8 @@ defmodule Cinder.Template.Compiler do
         :error ->
           raise UnknownLocalError,
             local: unquote(ident),
-            file: unquote(env.file),
-            line: unquote(env.line)
+            file: unquote(file),
+            line: unquote(line)
       end
     end
   end

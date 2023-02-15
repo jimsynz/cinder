@@ -4,12 +4,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="cinder-request-id" content={{@cinder_request_id}} />
+    <meta name="cinder-request-id" content={{@request.request_id}} />
     <title>
       {{#yield "title"}}Cinder{{/yield}}
     </title>
     {{#yield "head"}}{{/yield}}
     <script type="text/javascript" src="/assets/app.js"></script>
+    <link href="/assets/app.css" rel="stylesheet" />
   </head>
 
   <body>

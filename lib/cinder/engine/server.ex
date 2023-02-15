@@ -58,7 +58,6 @@ defmodule Cinder.Engine.Server do
   def handle_call(:request_id, _from, state), do: {:reply, state.request_id, state}
 
   @impl true
-
   def handle_cast({:transition_to, path_and_query}, state) when is_binary(path_and_query),
     do: handle_cast({:transition_to, path_and_query, %{}}, state)
 
@@ -194,6 +193,7 @@ defmodule Cinder.Engine.Server do
       assigns =
         route
         |> Route.assigns()
+        |> Map.put(:request, State.to_request(state))
         |> Assigns.init()
 
       state_template =
@@ -212,7 +212,7 @@ defmodule Cinder.Engine.Server do
     inner = render(state, false)
     layout = Extension.get_persisted(state.app, :cinder_layout)
     template = layout.template()
-    assigns = Assigns.init(cinder_request_id: state.request_id)
+    assigns = Assigns.init(request: State.to_request(state))
 
     template
     |> AssignCompose.init(assigns)

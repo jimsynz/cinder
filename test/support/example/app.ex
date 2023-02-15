@@ -1,5 +1,5 @@
 defmodule Example.App do
-  use Cinder
+  use Cinder, otp_app: :cinder
 
   @moduledoc false
 
@@ -19,10 +19,15 @@ defmodule Example.App do
     end
 
     templates do
-      base_path(__ENV__.file |> Path.join("../templates") |> Path.expand())
+      base_path Path.expand("./templates", __DIR__)
     end
 
-    secret_key_base(&Application.fetch_env(:cinder, &1))
-    cookie_signing_salt("jfJAB1yNo/0ATHaAjggU1Q")
+    assets do
+      source_path Path.expand("./assets", __DIR__)
+      target_path Path.expand("./static", __DIR__)
+    end
+
+    secret_key_base &Application.fetch_env(:cinder, &1)
+    cookie_signing_salt "jfJAB1yNo/0ATHaAjggU1Q"
   end
 end

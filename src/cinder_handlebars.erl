@@ -29,7 +29,11 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'template'(input(), index()) -> parse_result().
 'template'(Input, Index) ->
-  p(Input, Index, 'template', fun(I,D) -> (p_zero_or_more(p_choose([fun 'doctype'/2, fun 'comment'/2, fun 'component'/2, fun 'tag'/2, fun 'handlebars'/2, fun 'text'/2])))(I,D) end, fun(Node, Idx) ->transform('template', Node, Idx) end).
+  p(Input, Index, 'template', fun(I,D) -> (p_zero_or_more(fun 'template_content'/2))(I,D) end, fun(Node, Idx) ->transform('template', Node, Idx) end).
+
+-spec 'template_content'(input(), index()) -> parse_result().
+'template_content'(Input, Index) ->
+  p(Input, Index, 'template_content', fun(I,D) -> (p_choose([fun 'doctype'/2, fun 'comment'/2, fun 'component'/2, fun 'tag'/2, fun 'handlebars'/2, fun 'text'/2]))(I,D) end, fun(Node, Idx) ->transform('template_content', Node, Idx) end).
 
 -spec 'component'(input(), index()) -> parse_result().
 'component'(Input, Index) ->
@@ -37,7 +41,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'content_component'(input(), index()) -> parse_result().
 'content_component'(Input, Index) ->
-  p(Input, Index, 'content_component', fun(I,D) -> (p_seq([p_label('tag_start', fun 'component_tag_start'/2), p_label('content', fun 'component_block'/2), p_label('tag_end', fun 'component_tag_end'/2)]))(I,D) end, fun(Node, _Idx) ->
+  p(Input, Index, 'content_component', fun(I,D) -> (p_seq([p_label('tag_start', fun 'component_tag_start'/2), p_label('content', p_optional(fun 'component_block'/2)), p_label('tag_end', fun 'component_tag_end'/2)]))(I,D) end, fun(Node, _Idx) ->
     {component_start, Name, Attributes} = proplists:get_value(tag_start, Node),
     {component_end, Name} = proplists:get_value(tag_end, Node),
     Content = proplists:get_value(content, Node),
@@ -70,11 +74,11 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'component_block'(input(), index()) -> parse_result().
 'component_block'(Input, Index) ->
-  p(Input, Index, 'component_block', fun(I,D) -> (p_choose([p_zero_or_more(fun 'component_slot'/2), fun 'template'/2]))(I,D) end, fun(Node, Idx) ->transform('component_block', Node, Idx) end).
+  p(Input, Index, 'component_block', fun(I,D) -> (p_one_or_more(p_choose([fun 'component_slot'/2, fun 'template_content'/2])))(I,D) end, fun(Node, Idx) ->transform('component_block', Node, Idx) end).
 
 -spec 'component_slot'(input(), index()) -> parse_result().
 'component_slot'(Input, Index) ->
-  p(Input, Index, 'component_slot', fun(I,D) -> (p_seq([p_label('head', fun 'component_slot_start'/2), p_label('content', p_optional(fun 'template'/2)), p_label('tail', fun 'component_slot_end'/2)]))(I,D) end, fun(Node, _Idx) ->
+  p(Input, Index, 'component_slot', fun(I,D) -> (p_seq([p_label('head', fun 'component_slot_start'/2), p_label('content', p_zero_or_more(fun 'template_content'/2)), p_label('tail', fun 'component_slot_end'/2)]))(I,D) end, fun(Node, _Idx) ->
     {slot_start, Name} = proplists:get_value(head, Node),
     {slot_end, Name} = proplists:get_value(tail, Node),
     Content = proplists:get_value(content, Node),

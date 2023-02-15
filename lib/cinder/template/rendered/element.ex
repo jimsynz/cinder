@@ -2,13 +2,11 @@ defmodule Cinder.Template.Rendered.Element do
   @moduledoc """
   An HTML element.
   """
-  defstruct name: nil, attributes: [], children: [], renderer: nil
+  defstruct name: nil, attributes: [], children: [], optimised?: false
 
   alias Cinder.{
-    Template,
     Template.Assigns,
     Template.Compilable,
-    Template.Macros,
     Template.Render,
     Template.Rendered.Attribute,
     Template.Rendered.Element,
@@ -19,7 +17,7 @@ defmodule Cinder.Template.Rendered.Element do
           name: String.t(),
           attributes: [Attribute.t()],
           children: [Render.t()],
-          renderer: Template.renderer() | nil
+          optimised?: boolean
         }
 
   @type render_result :: iodata | Render.render_list()
@@ -85,9 +83,7 @@ defmodule Cinder.Template.Rendered.Element do
 
     @doc false
     @spec optimise(Element.t(), Macro.Env.t()) :: Element.t()
-    def optimise(element, _env) when is_function(element.renderer, 3), do: element
-
-    def optimise(%{renderer: {:fn, _, _}} = element, _env), do: element
+    def optimise(element, _env) when element.optimised? == true, do: element
 
     def optimise(element, env) do
       if dynamic?(element) do
@@ -95,7 +91,7 @@ defmodule Cinder.Template.Rendered.Element do
           element.attributes
           |> Enum.reverse()
           |> Enum.map(&Compilable.optimise(&1, env))
-          |> Static.optimise_sequence()
+          |> Static.optimise_sequences()
           |> List.flatten()
           |> Enum.map(&Compilable.optimise(&1, env))
 
@@ -103,46 +99,23 @@ defmodule Cinder.Template.Rendered.Element do
           element.children
           |> Enum.reverse()
           |> Enum.map(&Compilable.optimise(&1, env))
-          |> Static.optimise_sequence()
+          |> Static.optimise_sequences()
           |> List.flatten()
           |> Enum.map(&Compilable.optimise(&1, env))
 
-        element = %{element | attributes: attributes, children: children}
-
-        fun =
-          quote context: env.module, generated: true do
-            fn assigns, slots, locals ->
-              head =
-                Element.render_head(
-                  unquote(Macros.escape(element)),
-                  &Render.execute(&1, assigns, slots, locals)
-                )
-
-              body =
-                Element.render_body(
-                  unquote(Macros.escape(element)),
-                  &Render.execute(&1, assigns, slots, locals)
-                )
-
-              tail = Element.render_tail(unquote(Macros.escape(element)))
-
-              [head, body, tail]
-            end
-          end
-
-        %{element | renderer: fun}
+        %{element | attributes: attributes, children: children, optimised?: true}
       else
         attributes =
           element.attributes
           |> Enum.reverse()
           |> Enum.map(&Compilable.optimise(&1, env))
-          |> Static.optimise_sequence()
+          |> Static.optimise_sequences()
 
         children =
           element.children
           |> Enum.reverse()
           |> Enum.map(&Compilable.optimise(&1, env))
-          |> Static.optimise_sequence()
+          |> Static.optimise_sequences()
 
         %{element | attributes: attributes, children: children}
         |> Render.render()
@@ -161,15 +134,17 @@ defmodule Cinder.Template.Rendered.Element do
       body = Element.render_body(element, &Render.render/1)
       tail = Element.render_tail(element)
 
-      head
-      |> Stream.concat(body)
-      |> Enum.concat(tail)
+      [head, body, tail]
     end
 
     @doc false
     @spec execute(Element.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
     def execute(element, assigns, slots, locals) do
-      element.renderer.(assigns, slots, locals)
+      head = Element.render_head(element, &Render.execute(&1, assigns, slots, locals))
+      body = Element.render_body(element, &Render.execute(&1, assigns, slots, locals))
+      tail = Element.render_tail(element)
+
+      [head, body, tail]
     end
   end
 end

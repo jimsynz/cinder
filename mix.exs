@@ -37,13 +37,10 @@ defmodule Cinder.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :esbuild],
       mod: {Cinder.Application, []}
     ]
   end
-
-  defp compilers(env) when env in ~w[dev test]a, do: [:neotoma | Mix.compilers()]
-  defp compilers(_env), do: Mix.compilers()
 
   defp deps do
     [
@@ -51,7 +48,7 @@ defmodule Cinder.MixProject do
       {:phoenix_pubsub, "~> 2.1"},
       {:plug, "~> 1.14"},
       {:plug_cowboy, "~> 2.6"},
-      {:spark, "~> 0.4.0"},
+      {:spark, "~> 0.4"},
       {:credo, "~> 1.6", only: ~w[dev test]a, runtime: false},
       # {:doctor, "~> 0.21", only: ~w[dev test]a, runtime: false},
       {:doctor, github: "akoutmos/doctor", only: ~w[dev test]a, runtime: false},
@@ -59,6 +56,7 @@ defmodule Cinder.MixProject do
       {:esbuild, "~> 0.6.0", only: ~w[dev test]a},
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
+      {:tailwind, "~> 0.1.9", only: :dev},
       {:neotoma_compiler,
        git: "https://gitlab.com/jimsy/neotoma_compiler.git",
        branch: :main,
@@ -82,7 +80,9 @@ defmodule Cinder.MixProject do
     ]
   end
 
-  defp elixirc_paths(:dev), do: ["lib", "test/support"]
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp compilers(env) when env in ~w[dev test]a, do: [:neotoma | Mix.compilers()]
+  defp compilers(_env), do: Mix.compilers()
+
+  defp elixirc_paths(env) when env in ~w[dev test]a, do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 end

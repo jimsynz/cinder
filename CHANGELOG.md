@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.1.0](https://gitlab.com/jimsy/cinder/compare/v1.0.2...v1.1.0) (2023-02-15)
+
+
+
+
+### Features:
+
+* Component support.
+
 ## [v1.0.2](https://gitlab.com/jimsy/cinder/compare/v1.0.1...v1.0.2) (2023-02-06)
 
 

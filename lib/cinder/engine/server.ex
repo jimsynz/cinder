@@ -39,6 +39,7 @@ defmodule Cinder.Engine.Server do
   end
 
   @impl true
+  # sobelow_skip ["XSS.SendResp"]
   def handle_call({:render_once, conn}, _from, state) do
     html =
       state

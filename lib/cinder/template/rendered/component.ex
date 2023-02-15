@@ -23,6 +23,7 @@ defmodule Cinder.Template.Rendered.Component do
 
   @doc false
   @spec init([binary]) :: t
+  # sobelow_skip ["DOS.StringToAtom"]
   def init(name),
     do: %Component{name: name |> List.flatten() |> Enum.join(".") |> String.to_atom()}
 

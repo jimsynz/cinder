@@ -54,9 +54,12 @@ defmodule Cinder.MixProject do
       {:doctor, github: "akoutmos/doctor", only: ~w[dev test]a, runtime: false},
       {:dialyxir, "~> 1.2", only: ~w[dev test]a, runtime: false},
       {:esbuild, "~> 0.6.0", only: ~w[dev test]a},
+      {:ex_check, "~> 0.15", only: ~w[dev test]a, runtime: false},
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
       {:tailwind, "~> 0.1.9", only: :dev},
+      {:mix_audit, "~> 2.1", only: ~w[dev test]a, runtime: false},
+      {:sobelow, "~> 0.11", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,
        git: "https://gitlab.com/jimsy/neotoma_compiler.git",
        branch: :main,
@@ -65,20 +68,7 @@ defmodule Cinder.MixProject do
     ]
   end
 
-  defp aliases do
-    [
-      ci: [
-        "format --check-formatted",
-        "doctor --full --raise",
-        "credo --strict",
-        "dialyzer",
-        "hex.audit",
-        "test"
-      ]
-      # docs: ["docs", "ash.replace_doc_links"],
-      # test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
-    ]
-  end
+  defp aliases, do: []
 
   defp compilers(env) when env in ~w[dev test]a, do: [:neotoma | Mix.compilers()]
   defp compilers(_env), do: Mix.compilers()

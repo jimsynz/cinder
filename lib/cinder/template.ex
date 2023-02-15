@@ -21,6 +21,7 @@ defmodule Cinder.Template do
 
   @doc false
   @spec hash(Path.t()) :: binary | nil
+  # sobelow_skip ["Traversal.FileModule"]
   def hash(path) do
     if File.exists?(path) do
       path

@@ -19,6 +19,7 @@ defmodule Cinder.Plug.Transformer do
   @doc false
   @impl true
   @spec transform(Dsl.t()) :: {:ok, Dsl.t()} | {:error, DslError.t()}
+  # sobelow_skip ["DOS.StringToAtom"]
   def transform(dsl_state) do
     app =
       dsl_state

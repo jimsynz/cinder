@@ -26,6 +26,7 @@ build:
     - mix local.rebar --force
     - mix deps.get
     - mix deps.compile
+    - mix compile --warnings-as-errors
     - mix git_ops.project_info -f dotenv > project_info.env
   artifacts:
     paths:
@@ -52,6 +53,22 @@ credo:
   script:
     - mix credo
 
+dialyzer:
+  image: elixir:latest
+  dependencies:
+    - build
+  stage: test
+  script:
+    - mix dialyzer
+
+sobelow:
+  image: elixir:latest
+  dependencies:
+    - build
+  stage: test
+  script:
+    - mix sobelow --skip
+
 audit:
   image: elixir:latest
   dependencies:
@@ -68,13 +85,21 @@ format:
   script:
     - mix format --check-formatted
 
-# docs:
-#   image: elixir:latest
-#   dependencies:
-#     - build
-#   stage: test
-#   script:
-#     - mix doctor --full
+unused_deps:
+  image: elixir:latest
+  dependencies:
+    - build
+  stage: test
+  script:
+    - mix deps.unlock --check-unused
+
+docs:
+  image: elixir:latest
+  dependencies:
+    - build
+  stage: test
+  script:
+    - mix doctor --full
 
 pages:
   image: elixir:latest

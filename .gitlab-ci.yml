@@ -58,6 +58,10 @@ dialyzer:
   dependencies:
     - build
   stage: test
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - _build
   script:
     - mix dialyzer
 

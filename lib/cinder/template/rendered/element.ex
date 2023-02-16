@@ -113,7 +113,6 @@ defmodule Cinder.Template.Rendered.Element do
 
         children =
           element.children
-          |> Enum.reverse()
           |> Enum.map(&Compilable.optimise(&1, env))
           |> Static.optimise_sequences()
 

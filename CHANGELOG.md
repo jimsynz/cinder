@@ -5,6 +5,11 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.2.0](https://gitlab.com/jimsy/cinder/compare/v1.1.2...v1.2.0) (2023-02-18)
+
+
+
+
 ## [v0.7.2](https://gitlab.com/jimsy/cinder/compare/v0.7.1...v0.7.2) (2023-02-18)
 
 

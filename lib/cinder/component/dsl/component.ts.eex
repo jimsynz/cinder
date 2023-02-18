@@ -1,0 +1,13 @@
+import CinderComponent from "./cinder/component";
+
+export default class <%= @class_name %> extends CinderComponent {
+  constructor(element: HTMLElement) {
+    super(element);
+
+    <%= for event <- @events do %>
+    this.registerEvent('<%= event.name %>', function(event: Event) {
+      <%= event.script.script %>
+    });
+    <% end %>
+  }
+}

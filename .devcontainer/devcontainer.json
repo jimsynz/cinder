@@ -20,7 +20,10 @@
 		"iampeterbanjo.elixirlinter",
 		"pgourlain.erlang",
 		"szTheory.erlang-formatter",
-		"bradlc.vscode-tailwindcss"
+		"bradlc.vscode-tailwindcss",
+		"jimsy.cinder",
+		"andrejunges.Handlebars",
+		"esbenp.prettier-vscode"
 	]
     }
   },

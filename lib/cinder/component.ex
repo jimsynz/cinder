@@ -110,6 +110,14 @@ defmodule Cinder.Component do
     end
   end
 
+  @doc false
+  @spec handle_opts(keyword) :: Macro.t()
+  def handle_opts(_opts) do
+    quote do
+      import Cinder.Component.Script
+    end
+  end
+
   defp get_expected_assigns(assigns, schema) do
     schema
     |> Stream.map(&elem(&1, 0))

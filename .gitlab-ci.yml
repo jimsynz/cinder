@@ -135,7 +135,7 @@ git_ops:
       mkdir -p artifacts
       git config --global user.name "Gitlab Runner for ${GITLAB_USER_NAME}"
       git config --global user.email "${GITLAB_USER_EMAIL}"
-      mix git_ops.release --yes || true
+      mix git_ops.release --yes --no-major || true
       mix git_ops.project_info -f shell > artifacts/env
       source artifacts/env
       if [ "v${OLD_APP_VERSION}" != "v${APP_VERSION}" ]; then

@@ -5,7 +5,7 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
-## [v1.1.2](https://gitlab.com/jimsy/cinder/compare/v1.1.1...v1.1.2) (2023-02-18)
+## [v0.7.2](https://gitlab.com/jimsy/cinder/compare/v0.7.1...v0.7.2) (2023-02-18)
 
 
 
@@ -14,7 +14,7 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 * component events/scripts.
 
-## [v1.1.1](https://gitlab.com/jimsy/cinder/compare/v1.1.0...v1.1.1) (2023-02-16)
+## [v0.7.1](https://gitlab.com/jimsy/cinder/compare/v0.7.0...v0.7.1) (2023-02-16)
 
 
 
@@ -23,7 +23,7 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 * fix templates rendering backwards.
 
-## [v1.1.0](https://gitlab.com/jimsy/cinder/compare/v1.0.2...v1.1.0) (2023-02-15)
+## [v0.7.0](https://gitlab.com/jimsy/cinder/compare/v0.6.2...v0.7.0) (2023-02-15)
 
 
 
@@ -32,7 +32,7 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 * Component support.
 
-## [v1.0.2](https://gitlab.com/jimsy/cinder/compare/v1.0.1...v1.0.2) (2023-02-06)
+## [v0.6.2](https://gitlab.com/jimsy/cinder/compare/v0.6.1...v0.6.2) (2023-02-06)
 
 
 
@@ -41,7 +41,7 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 * rendering bugs caused by handlebars merge.
 
-## [v1.0.1](https://gitlab.com/jimsy/cinder/compare/v1.0.0...v1.0.1) (2023-02-06)
+## [v0.6.1](https://gitlab.com/jimsy/cinder/compare/v0.6.0...v0.6.1) (2023-02-06)
 
 
 
@@ -50,7 +50,7 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 * client side regressions caused by new templates.
 
-## [v1.0.0](https://gitlab.com/jimsy/cinder/compare/v0.5.0...v1.0.0) (2023-01-16)
+## [v0.6.0](https://gitlab.com/jimsy/cinder/compare/v0.5.0...v0.6.0) (2023-01-16)
 ### Breaking Changes:
 
 * Relicense to HL3-FULL

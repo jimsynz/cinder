@@ -3,7 +3,7 @@ defmodule Cinder.Template.Rendered.Block do
   A Handlebars block.
   """
 
-  defstruct expr: nil, positive: [], negative: [], bindings: [], optimised?: false
+  defstruct bindings: [], expr: nil, negative: [], optimised?: false, positive: []
 
   alias Cinder.{
     Template,
@@ -15,11 +15,11 @@ defmodule Cinder.Template.Rendered.Block do
   }
 
   @type t :: %Block{
-          expr: nil | Macro.t() | Template.renderer(),
-          positive: [Render.t()],
-          negative: [Render.t()],
           bindings: [atom],
-          optimised?: boolean
+          expr: nil | Macro.t() | Template.renderer(),
+          negative: [Render.t()],
+          optimised?: boolean,
+          positive: [Render.t()]
         }
 
   @doc "Initialise an empty block containing the given Elixir AST"

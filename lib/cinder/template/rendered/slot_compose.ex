@@ -2,14 +2,14 @@ defmodule Cinder.Template.Rendered.SlotCompose do
   @moduledoc """
   A wrapper around a renderable that allows for easy composition of slots.
   """
-  defstruct renderable: nil, slot: nil, name: nil
+  defstruct name: nil, renderable: nil, slot: nil
 
   alias Cinder.Template.{Assigns, Render, Rendered.SlotCompose}
 
   @type t :: %SlotCompose{
+          name: atom | binary,
           renderable: Render.t(),
-          slot: Render.t(),
-          name: atom | binary
+          slot: Render.t()
         }
 
   @doc "Initialise a slot composition"

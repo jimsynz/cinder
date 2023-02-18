@@ -3,7 +3,7 @@ defmodule Cinder.Template.Rendered.Property do
   An attribute passed to a component.
   """
 
-  defstruct name: nil, value: nil, optimised?: false
+  defstruct name: nil, optimised?: false, value: nil
 
   alias Cinder.{
     Template,
@@ -13,8 +13,8 @@ defmodule Cinder.Template.Rendered.Property do
 
   @type t :: %Property{
           name: binary,
-          value: nil | binary | Macro.t() | Template.renderer(),
-          optimised?: boolean
+          optimised?: boolean,
+          value: nil | binary | Macro.t() | Template.renderer()
         }
 
   @doc false

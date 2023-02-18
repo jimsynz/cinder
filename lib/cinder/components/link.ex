@@ -17,12 +17,9 @@ defmodule Cinder.Components.Link do
 
   component do
     prop :class, :css_class
+    prop :to, :uri
 
-    prop :to, :uri do
-      data? true
-    end
-
-    slot :default, required?: true, trim?: true
+    slot :default, required?: true
 
     event :click, ~j"""
       let uri = this.dataSet['to'];
@@ -38,7 +35,7 @@ defmodule Cinder.Components.Link do
   @spec render :: Cinder.Template.Render.t()
   def render do
     ~B"""
-    <a href={{@to}} class={{@class}}>
+    <a href={{@to}} class={{@class}} data-to={{@to}}>
       {{yield}}
     </a>
     """

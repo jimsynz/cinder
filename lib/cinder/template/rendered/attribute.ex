@@ -3,7 +3,7 @@ defmodule Cinder.Template.Rendered.Attribute do
   An HTML attribute.
   """
 
-  defstruct name: nil, value: nil, optimised?: false
+  defstruct name: nil, optimised?: false, value: nil
 
   alias Cinder.{
     Template,
@@ -16,12 +16,12 @@ defmodule Cinder.Template.Rendered.Attribute do
 
   @type t :: %Attribute{
           name: binary,
-          value: nil | binary | Macro.t() | Template.renderer(),
-          optimised?: boolean
+          optimised?: boolean,
+          value: nil | binary | Macro.t() | Template.renderer()
         }
 
   @doc false
-  @spec init(binary, binary) :: t
+  @spec init(binary, binary | Macro.t()) :: t
   def init(name, value), do: %Attribute{name: name, value: value}
 
   defimpl Compilable do

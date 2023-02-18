@@ -268,11 +268,13 @@ defmodule Cinder.TemplateTest do
 
       def render do
         ~B"""
-        {{#if (has_slot "default")}}
-          {{yield "default"}}
-        {{else}}
-          Basic component
-        {{/if}}
+        <div>
+          {{#if (has_slot "default")}}
+            {{yield "default"}}
+          {{else}}
+            Basic component
+          {{/if}}
+        </div>
         """
       end
     end

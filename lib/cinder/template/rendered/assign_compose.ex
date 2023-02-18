@@ -3,13 +3,13 @@ defmodule Cinder.Template.Rendered.AssignCompose do
   A wrapper around a renderable that allows you to inject assigns as a specific
   location in the tree.
   """
-  defstruct renderable: nil, assigns: nil
+  defstruct assigns: nil, renderable: nil
 
   alias Cinder.Template.{Assigns, Render, Rendered.AssignCompose}
 
   @type t :: %AssignCompose{
-          renderable: Render.t(),
-          assigns: Assigns.t()
+          assigns: Assigns.t(),
+          renderable: Render.t()
         }
 
   @doc "Initialise a assign composition"

@@ -67,6 +67,7 @@ defmodule Cinder.Component.Dsl.Transformer do
 
       script = %Script{
         lang: language,
+        # sobelow_skip ["DOS.StringToAtom"]
         script:
           apply(__MODULE__, :"#{language}_generator", [[events: events, class_name: class_name]])
       }

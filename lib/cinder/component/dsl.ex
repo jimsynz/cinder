@@ -3,7 +3,15 @@ defmodule Cinder.Component.Dsl do
   DSL definitions for Cinder.Component.
   """
 
-  alias Cinder.Component.{Dsl.Event, Dsl.Property, Dsl.Slot, Dsl.Transformer, Script}
+  alias Cinder.Component.{
+    Dsl.Event,
+    Dsl.Property,
+    Dsl.Slot,
+    Dsl.Transformer,
+    Script,
+    Dsl.Verifier
+  }
+
   alias Spark.Dsl.{Entity, Extension, Section}
 
   @component %Section{
@@ -34,16 +42,6 @@ defmodule Cinder.Component.Dsl do
             type: :boolean,
             required: false,
             default: true
-          ],
-          data?: [
-            doc: """
-            Add this property to the component's dataset.
-
-            When set to `true` it will add a "data" attribute to the component's element.
-            """,
-            type: :boolean,
-            required: false,
-            default: false
           ]
         ]
       },
@@ -58,10 +56,6 @@ defmodule Cinder.Component.Dsl do
           required?: [
             type: :boolean,
             default: true
-          ],
-          trim?: [
-            type: :boolean,
-            default: false
           ]
         ]
       },
@@ -83,7 +77,7 @@ defmodule Cinder.Component.Dsl do
     ]
   }
 
-  use Extension, sections: [@component], transformers: [Transformer]
+  use Extension, sections: [@component], transformers: [Transformer], verifiers: [Verifier]
 
   @doc false
   @spec dsl :: [Section.t()]

@@ -2,12 +2,12 @@ defmodule Cinder.Template.Rendered.Document do
   @moduledoc """
   An HTML document.
   """
-  defstruct file: nil,
-            line: 1,
-            column: 1,
+  defstruct args: [],
             children: [],
+            column: 1,
+            file: nil,
+            line: 1,
             merge_locals: nil,
-            args: [],
             optimised?: false
 
   alias Cinder.{
@@ -19,12 +19,12 @@ defmodule Cinder.Template.Rendered.Document do
   }
 
   @type t :: %Document{
+          args: Keyword.t(any),
+          children: [Render.t()],
+          column: non_neg_integer(),
           file: String.t(),
           line: non_neg_integer(),
-          column: non_neg_integer(),
-          children: [Render.t()],
           merge_locals: nil | (Assigns.t() -> Assigns.t()),
-          args: Keyword.t(any),
           optimised?: boolean
         }
 
@@ -47,10 +47,14 @@ defmodule Cinder.Template.Rendered.Document do
     def optimise(document, env) do
       children =
         document.children
+        |> trim_leading_whitespace()
         |> Enum.reverse()
         |> Enum.map(&Compilable.optimise(&1, env))
         |> Static.optimise_sequences()
         |> Enum.map(&Compilable.optimise(&1, env))
+        |> trim_trailing_whitespace()
+        |> Enum.map(&Compilable.optimise(&1, env))
+        |> Static.optimise_sequences()
 
       fun =
         quote context: env.module, generated: true do
@@ -63,6 +67,31 @@ defmodule Cinder.Template.Rendered.Document do
         end
 
       %{document | children: children, merge_locals: fun, optimised?: true}
+    end
+
+    defp trim_leading_whitespace(children), do: trim_statics(children, &Static.trim_leading/1)
+    defp trim_trailing_whitespace(children), do: trim_statics(children, &Static.trim_trailing/1)
+
+    defp trim_statics(children, trimmer) do
+      children
+      |> Enum.reduce({[], false}, fn
+        node, {result, false} when is_struct(node, Static) ->
+          static = trimmer.(node)
+
+          if Static.empty?(static) do
+            {result, false}
+          else
+            {[static | result], true}
+          end
+
+        node, {result, false} ->
+          {[node | result], true}
+
+        node, {result, true} ->
+          {[node | result], true}
+      end)
+      |> elem(0)
+      |> Enum.reverse()
     end
   end
 

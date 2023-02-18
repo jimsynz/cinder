@@ -3,7 +3,7 @@ defmodule Cinder.Template.Rendered.Component do
   A cinder component.
   """
 
-  defstruct name: [], attributes: [], slots: %{}, optimised?: false
+  defstruct attributes: [], name: [], optimised?: false, slots: %{}
 
   alias Cinder.{
     Template.Assigns,
@@ -15,10 +15,10 @@ defmodule Cinder.Template.Rendered.Component do
   }
 
   @type t :: %Component{
-          name: atom,
           attributes: [Attribute.t()],
-          slots: %{required(atom | binary) => [Render.t()]},
-          optimised?: boolean
+          name: atom,
+          optimised?: boolean,
+          slots: %{required(atom | binary) => [Render.t()]}
         }
 
   @doc false
@@ -70,16 +70,16 @@ defmodule Cinder.Template.Rendered.Component do
           {name, children}
         end)
 
-      attributes =
-        component.attributes
-        |> Enum.reverse()
-        |> Enum.map(&Compilable.optimise(&1, env))
-
       module =
         case Macro.Env.fetch_alias(env, component.name) do
           {:ok, alias} -> Module.concat([alias])
           :error -> Module.concat([component.name])
         end
+
+      attributes =
+        component.attributes
+        |> Enum.reverse()
+        |> Enum.map(&Compilable.optimise(&1, env))
 
       %{
         component
@@ -127,13 +127,11 @@ defmodule Cinder.Template.Rendered.Component do
 
       with :ok <- Cinder.Component.validate_props(component.name, assigns),
            :ok <- Cinder.Component.validate_slots(component.name, slots) do
-        :ok
+        component.name.render()
+        |> Render.execute(assigns, slots, locals)
       else
         {:error, reason} -> raise reason
       end
-
-      component.name.render()
-      |> Render.execute(assigns, slots, locals)
     end
   end
 end

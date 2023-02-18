@@ -2,7 +2,7 @@ defmodule Cinder.Template.Rendered.VoidElement do
   @moduledoc """
   A void HTML element.
   """
-  defstruct name: nil, attributes: [], optimised?: false
+  defstruct attributes: [], name: nil, optimised?: false
 
   alias Cinder.{
     Template.Assigns,
@@ -14,8 +14,8 @@ defmodule Cinder.Template.Rendered.VoidElement do
   }
 
   @type t :: %VoidElement{
-          name: String.t(),
           attributes: [Attribute.t()],
+          name: String.t(),
           optimised?: boolean
         }
 

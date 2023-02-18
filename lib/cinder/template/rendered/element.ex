@@ -14,9 +14,9 @@ defmodule Cinder.Template.Rendered.Element do
   }
 
   @type t :: %Element{
-          name: String.t(),
           attributes: [Attribute.t()],
           children: [Render.t()],
+          name: String.t(),
           optimised?: boolean
         }
 

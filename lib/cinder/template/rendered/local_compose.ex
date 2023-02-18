@@ -2,13 +2,17 @@ defmodule Cinder.Template.Rendered.LocalCompose do
   @moduledoc """
   A wrapper around a renderable that allows you to inject locals.
   """
-  defstruct renderable: nil, locals: []
+  defstruct locals: [], renderable: nil
 
-  alias Cinder.Template.{Assigns, Render, Rendered.LocalCompose}
+  alias Cinder.Template.{
+    Assigns,
+    Render,
+    Rendered.LocalCompose
+  }
 
   @type t :: %LocalCompose{
-          renderable: Render.t(),
-          locals: [{Assigns.key(), Assigns.value()}]
+          locals: [{Assigns.key(), Assigns.value()}],
+          renderable: Render.t()
         }
 
   @doc "Initialise a local composition"

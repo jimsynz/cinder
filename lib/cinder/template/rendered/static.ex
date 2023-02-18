@@ -8,6 +8,7 @@ defmodule Cinder.Template.Rendered.Static do
   alias Cinder.Template.{
     Assigns,
     Compilable,
+    Iodata,
     Render,
     Rendered.Static
   }
@@ -28,7 +29,38 @@ defmodule Cinder.Template.Rendered.Static do
     |> optimise_sequences([])
   end
 
+  @doc """
+  Is the static empty of content?
+  """
+  @spec empty?(t) :: boolean
+  def empty?(static) when static.static == [], do: true
+  def empty?(static) when static.static == <<>>, do: true
+  def empty?(_static), do: false
+
+  @doc """
+  Trim any leading whitespace from the static.
+  """
+  @spec trim_leading(t) :: t
+  def trim_leading(static),
+    do: %{
+      static
+      | static: static.static |> Iodata.stream() |> Iodata.trim_leading() |> Enum.to_list()
+    }
+
+  @doc """
+  Trim any trailing whitespace from the static.
+  """
+  @spec trim_trailing(t) :: t
+  def trim_trailing(static),
+    do: %{
+      static
+      | static: static.static |> Iodata.stream() |> Iodata.trim_trailing() |> Enum.to_list()
+    }
+
   defp optimise_sequences([], result), do: Enum.reverse(result)
+
+  defp optimise_sequences([%Static{static: []} | remaining], result),
+    do: optimise_sequences(remaining, result)
 
   defp optimise_sequences([%Static{static: next} | remaining], [%Static{static: last} | result]),
     do: optimise_sequences(remaining, [Static.init([next, last]) | result])
@@ -45,7 +77,7 @@ defmodule Cinder.Template.Rendered.Static do
     def dynamic?(_), do: false
 
     @spec optimise(Static.t(), Macro.Env.t()) :: Static.t()
-    def optimise(node, _env), do: %{node | static: List.flatten(node.static)}
+    def optimise(node, _env), do: node
   end
 
   defimpl Render do

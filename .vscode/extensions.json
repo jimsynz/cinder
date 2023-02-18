@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "jimsy.cinder",
+    "andrejunges.handlebars",
+    "jakebecker.elixir-ls",
+    "iampeterbanjo.elixirlinter",
+    "esbenp.prettier-vscode"
+  ]
+}

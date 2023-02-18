@@ -3,12 +3,12 @@ defmodule Cinder.Component.Dsl do
   DSL definitions for Cinder.Component.
   """
 
-  alias Cinder.Component.Dsl.{Property, Slot, Transformer}
+  alias Cinder.Component.{Dsl.Event, Dsl.Property, Dsl.Slot, Dsl.Transformer, Script}
   alias Spark.Dsl.{Entity, Extension, Section}
 
-  @properties %Section{
-    name: :properties,
-    describe: "Properties which can be passed to this component",
+  @component %Section{
+    name: :component,
+    describe: "Component settings",
     schema: [],
     entities: [
       %Entity{
@@ -34,17 +34,19 @@ defmodule Cinder.Component.Dsl do
             type: :boolean,
             required: false,
             default: true
+          ],
+          data?: [
+            doc: """
+            Add this property to the component's dataset.
+
+            When set to `true` it will add a "data" attribute to the component's element.
+            """,
+            type: :boolean,
+            required: false,
+            default: false
           ]
         ]
-      }
-    ]
-  }
-
-  @slots %Section{
-    name: :slots,
-    describe: "Slots which can be passed to this component",
-    schema: [],
-    entities: [
+      },
       %Entity{
         name: :slot,
         args: [{:optional, :name, :default}],
@@ -62,13 +64,28 @@ defmodule Cinder.Component.Dsl do
             default: false
           ]
         ]
+      },
+      %Entity{
+        name: :event,
+        args: [:name, :script],
+        target: Event,
+        schema: [
+          name: [
+            type: :atom,
+            required: true
+          ],
+          script: [
+            type: {:struct, Script},
+            required: true
+          ]
+        ]
       }
     ]
   }
 
-  use Extension, sections: [@properties, @slots], transformers: [Transformer]
+  use Extension, sections: [@component], transformers: [Transformer]
 
   @doc false
   @spec dsl :: [Section.t()]
-  def dsl, do: [@properties, @slots]
+  def dsl, do: [@component]
 end

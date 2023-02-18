@@ -1,5 +1,5 @@
 (() => {
-  // ts/cinder.ts
+  // ts/cinder/socket.ts
   var CinderSocket = class {
     constructor(url, requestId, path) {
       this.url = url;
@@ -32,6 +32,8 @@
       });
     }
   };
+
+  // ts/cinder.ts
   window.addEventListener("load", () => {
     var _a;
     let wsp = "wss:";

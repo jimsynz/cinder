@@ -105,6 +105,15 @@ docs:
   script:
     - mix doctor --full
 
+conventional_commit:
+  image: elixir:latest
+  dependencies:
+    - build
+  stage: test
+  script:
+    - git log -1 --format=%s > .last_commit_message
+    - mix git_ops.check_message .last_commit_message
+
 pages:
   image: elixir:latest
   dependencies:

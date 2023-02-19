@@ -285,7 +285,9 @@ defmodule Cinder.TemplateTest do
 
       def render do
         ~B"""
-        <BasicComponent>Yielded by basic component</BasicComponent>
+        <div>
+          <BasicComponent>Yielded by basic component</BasicComponent>
+        </div>
         """
       end
     end

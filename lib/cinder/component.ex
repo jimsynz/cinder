@@ -111,11 +111,39 @@ defmodule Cinder.Component do
   end
 
   @doc false
-  @spec handle_opts(keyword) :: Macro.t()
-  def handle_opts(_opts) do
-    quote do
-      import Cinder.Component.Script
-    end
+  @spec __using__(keyword) :: Macro.t()
+  defmacro __using__(opts) do
+    maybe_template = String.replace(__CALLER__.file, ~r/\.exs?$/, ".hbs")
+
+    head =
+      quote generated: true do
+        @behaviour Cinder.Component
+        import Cinder.Component.Script
+        use Cinder.Template
+
+        if File.exists?(unquote(maybe_template)) do
+          @external_resource unquote(maybe_template)
+          @template_hash Cinder.Template.hash(unquote(maybe_template))
+
+          @doc false
+          @spec render :: Cinder.Template.Render.t()
+          def render do
+            compile_file(unquote(maybe_template))
+          end
+
+          @doc false
+          @spec __mix_recompile__? :: boolean
+          def __mix_recompile__? do
+            @template_hash != Cinder.Template.hash(unquote(maybe_template))
+          end
+
+          defoverridable render: 0
+        end
+      end
+
+    tail = super(opts)
+
+    [head] ++ [tail]
   end
 
   defp get_expected_assigns(assigns, schema) do
@@ -133,7 +161,8 @@ defmodule Cinder.Component do
   defp get_extra_assigns(assigns, schema) do
     schema
     |> Stream.map(&elem(&1, 0))
-    |> Enum.map(&to_string/1)
+    |> Stream.map(&to_string/1)
+    |> Enum.reject(&String.starts_with?(&1, "data-"))
     |> then(&Map.drop(assigns.data, &1))
   end
 end

@@ -8,8 +8,7 @@ defmodule Cinder.Component.Dsl do
     Dsl.Property,
     Dsl.Slot,
     Dsl.Transformer,
-    Script,
-    Dsl.Verifier
+    Script
   }
 
   alias Spark.Dsl.{Entity, Extension, Section}
@@ -42,6 +41,11 @@ defmodule Cinder.Component.Dsl do
             type: :boolean,
             required: false,
             default: true
+          ],
+          data?: [
+            type: :boolean,
+            required: false,
+            default: false
           ]
         ]
       },
@@ -77,7 +81,7 @@ defmodule Cinder.Component.Dsl do
     ]
   }
 
-  use Extension, sections: [@component], transformers: [Transformer], verifiers: [Verifier]
+  use Extension, sections: [@component], transformers: [Transformer]
 
   @doc false
   @spec dsl :: [Section.t()]

@@ -14,6 +14,8 @@ defmodule Cinder.Template.Macros do
     column = Keyword.get(meta, :column, 1)
     compiled = Compiler.compile(template, __CALLER__, __CALLER__.file, line, column)
 
+    Module.put_attribute(__CALLER__.module, :compiled_template, compiled)
+
     quote context: __CALLER__.module, generated: true do
       unquote(__MODULE__.escape(compiled))
     end
@@ -30,6 +32,8 @@ defmodule Cinder.Template.Macros do
       |> File.read!()
 
     compiled = Compiler.compile(template, __CALLER__, path, 1, 1)
+
+    Module.put_attribute(__CALLER__.module, :compiled_template, compiled)
 
     quote context: __CALLER__.module, generated: true do
       unquote(__MODULE__.escape(compiled))

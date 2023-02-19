@@ -1,5 +1,8 @@
 defmodule Cinder.Engine.State do
-  @moduledoc false
+  @moduledoc """
+  Contains the state of the Cinder routing engine.
+  """
+
   alias Cinder.{Engine, Engine.State, Request, Route}
 
   defstruct app: nil,

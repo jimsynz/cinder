@@ -2,7 +2,8 @@ defmodule Cinder.Component.Dsl.Transformer do
   @moduledoc false
 
   alias Cinder.Request
-  alias Cinder.Component.{Dsl.Event, Dsl.Property, Dsl.Slot, Script}
+  alias Cinder.Component.{Dsl.Event, Dsl.Property, Dsl.Slot, Script, TemplateTransformer}
+  alias Cinder.Template.Macros
   alias Spark.{Dsl, Dsl.Transformer, Error.DslError}
   use Transformer
 
@@ -37,34 +38,64 @@ defmodule Cinder.Component.Dsl.Transformer do
   @spec transform(Dsl.t()) :: {:ok, Dsl.t()}
   def transform(dsl_state) do
     with :ok <- validate_event_scripts(dsl_state),
-         {:ok, dsl_state} <- maybe_compile_template(dsl_state),
          {:ok, dsl_state} <- build_property_schema(dsl_state),
          {:ok, dsl_state} <- build_slot_schema(dsl_state),
-         {:ok, dsl_state} <- add_eval(dsl_state) do
-      maybe_build_script(dsl_state)
+         {:ok, dsl_state} <- build_script_class_name(dsl_state),
+         {:ok, dsl_state} <- maybe_build_script(dsl_state) do
+      transform_template(dsl_state)
     end
   end
 
-  defp maybe_build_script(dsl_state) do
-    {:ok,
-     dsl_state
-     |> maybe_build_script(:javascript)
-     |> maybe_build_script(:typescript)}
+  defp transform_template(dsl_state) do
+    module = Transformer.get_persisted(dsl_state, :module)
+
+    Module.make_overridable(module, [{:render, 0}])
+
+    document = Module.get_attribute(module, :compiled_template)
+    template = TemplateTransformer.transform_template(dsl_state, document)
+
+    dsl_state =
+      dsl_state
+      |> Transformer.eval(
+        [],
+        quote generated: true, context: module do
+          def render do
+            unquote(Macros.escape(template))
+          end
+        end
+      )
+
+    {:ok, dsl_state}
   end
 
-  defp maybe_build_script(dsl_state, language) do
+  defp build_script_class_name(dsl_state) do
+    class_name =
+      dsl_state
+      |> Transformer.get_persisted(:module)
+      |> Module.split()
+      |> Enum.join("$")
+
+    {:ok, Transformer.persist(dsl_state, :script_class_name, class_name)}
+  end
+
+  defp maybe_build_script(dsl_state) do
+    class_name =
+      dsl_state
+      |> Transformer.get_persisted(:script_class_name)
+
+    {:ok,
+     dsl_state
+     |> maybe_build_script(:javascript, class_name)
+     |> maybe_build_script(:typescript, class_name)}
+  end
+
+  defp maybe_build_script(dsl_state, language, class_name) do
     events =
       dsl_state
       |> Transformer.get_entities([:component])
       |> Enum.filter(&is_struct(&1, Event))
 
     if Enum.any?(events, &(&1.script.lang == language)) do
-      class_name =
-        dsl_state
-        |> Transformer.get_persisted(:module)
-        |> Module.split()
-        |> Enum.join("$")
-
       script = %Script{
         lang: language,
         # sobelow_skip ["DOS.StringToAtom"]
@@ -76,22 +107,6 @@ defmodule Cinder.Component.Dsl.Transformer do
     else
       dsl_state
     end
-  end
-
-  defp add_eval(dsl_state) do
-    {:ok,
-     Transformer.eval(
-       dsl_state,
-       [],
-       quote do
-         @behaviour Cinder.Component
-         import Cinder.Template.Assigns, only: :macros
-         import Cinder.Template.Helpers.Block
-         import Cinder.Template.Helpers.Expression
-         import Cinder.Template.Helpers.Route
-         import Cinder.Template.Macros
-       end
-     )}
   end
 
   defp validate_event_scripts(dsl_state) do
@@ -149,42 +164,5 @@ defmodule Cinder.Component.Dsl.Transformer do
       )
 
     {:ok, Transformer.persist(dsl_state, :property_schema, property_schema)}
-  end
-
-  defp maybe_compile_template(dsl_state) do
-    template =
-      dsl_state
-      |> Transformer.get_persisted(:file)
-      |> String.replace(~r/\.exs?$/, ".hbs")
-
-    dsl_state =
-      if File.exists?(template) do
-        dsl_state
-        |> Transformer.eval(
-          [],
-          quote do
-            @external_resource unquote(template)
-            @template_hash Cinder.Template.hash(unquote(template))
-
-            @doc false
-            @spec render :: Cinder.Template.Render.t()
-            def render do
-              compile_file(unquote(template))
-            end
-
-            @doc false
-            @spec __mix_recompile__? :: boolean
-            def __mix_recompile__? do
-              @template_hash != Cinder.Template.hash(unquote(template))
-            end
-
-            defoverridable render: 0
-          end
-        )
-      else
-        dsl_state
-      end
-
-    {:ok, dsl_state}
   end
 end

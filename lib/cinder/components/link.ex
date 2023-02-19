@@ -5,24 +5,25 @@ defmodule Cinder.Components.Link do
   ## Usage
 
   ```handlebars
-  <Cinder::Components::Link to={{url_for @request, "app.posts.post[id]", id=123}}>
+  <Cinder::Components::Link to={{url_for @request "app.posts.post[id]" id=123}}>
     Link to Post #123.
   </Cinder::Components::Link>
   ```
   """
 
   use Cinder.Component
-  use Cinder.Template
-  import Cinder.Component.Script
 
   component do
     prop :class, :css_class
+
     prop :to, :uri
 
-    slot :default, required?: true
+    slot :default do
+      required? true
+    end
 
     event :click, ~j"""
-      let uri = this.dataSet['to'];
+      let uri = this.getAttribute('href');
 
       if (uri?.startsWith("/")) {
         event.preventDefault();
@@ -35,9 +36,7 @@ defmodule Cinder.Components.Link do
   @spec render :: Cinder.Template.Render.t()
   def render do
     ~B"""
-    <a href={{@to}} class={{@class}} data-to={{@to}}>
-      {{yield}}
-    </a>
+    <a href={{@to}} class={{@class}}>{{yield}}</a>
     """
   end
 end

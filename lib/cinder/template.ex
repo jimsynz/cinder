@@ -1,6 +1,9 @@
 defmodule Cinder.Template do
   alias Cinder.Template.{Assigns, Render}
-  @moduledoc false
+
+  @moduledoc """
+  Mixins for embedding templates in modules.
+  """
 
   @type assigns :: Assigns.t()
   @type locals :: Assigns.t()

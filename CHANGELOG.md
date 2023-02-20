@@ -5,6 +5,17 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.8.2](https://gitlab.com/jimsy/cinder/compare/v0.8.1...v0.8.2) (2023-02-20)
+
+
+
+
+### Improvements:
+
+* Enable components to add extra properties to their root elements.
+
+* ensure that components only have one element at the root.
+
 ## [v0.8.1](https://gitlab.com/jimsy/cinder/compare/v0.8.0...v0.8.1) (2023-02-18)
 
 

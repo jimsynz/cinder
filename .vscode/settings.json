@@ -11,6 +11,8 @@
     "enumerables",
     "esbuild",
     "gotpointercapture",
+    "Hexdocs",
+    "introspected",
     "iolist",
     "Lexer",
     "nofile",

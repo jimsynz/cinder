@@ -112,7 +112,10 @@ defmodule Cinder.Dsl do
           required: true
         ],
         cookie_signing_salt: [
-          type: :string,
+          type:
+            {:or,
+             [{:spark_function_behaviour, Cinder.Secret, {Cinder.Secret.AnonFn, 1}}, :string]},
+          doc: "Secret used to signing cookies",
           required: true
         ],
         listen_port: [

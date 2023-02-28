@@ -3,13 +3,13 @@ defmodule Cinder.Plug do
   WAT
   """
 
-  alias Cinder.Dsl.Info
+  alias Cinder.{Dsl.Info, Secret}
   alias Spark.Dsl.Extension
 
   @spec __using__(keyword) :: Macro.t()
   defmacro __using__(opts) do
     app = Keyword.fetch!(opts, :app)
-    cookie_signing_salt = Info.cinder_cookie_signing_salt!(app)
+    cookie_signing_salt = Secret.get_secret(app, [:cinder], :cookie_signing_salt)
     static_dir = Info.cinder_assets_target_path!(app)
 
     default_plugs = [

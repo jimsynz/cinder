@@ -9,7 +9,6 @@ defmodule Cinder.Plug do
   @spec __using__(keyword) :: Macro.t()
   defmacro __using__(opts) do
     app = Keyword.fetch!(opts, :app)
-    cookie_signing_salt = Secret.get_secret(app, [:cinder], :cookie_signing_salt)
     static_dir = Info.cinder_assets_target_path!(app)
 
     default_plugs = [
@@ -19,7 +18,7 @@ defmodule Cinder.Plug do
        [
          store: :cookie,
          key: "#{Macro.underscore(app)}_session",
-         signing_salt: cookie_signing_salt,
+         signing_salt: {Secret, :get_secret, [[:cinder], :cookie_signing_salt]},
          same_site: "Lax"
        ]},
       {:fetch_session, []},
@@ -46,7 +45,7 @@ defmodule Cinder.Plug do
       use Plug.Builder
       import Plug.Conn
 
-      for {name, options} <- unquote(plugs) do
+      for {name, options} <- unquote(Macro.escape(plugs)) do
         plug(name, options)
       end
 

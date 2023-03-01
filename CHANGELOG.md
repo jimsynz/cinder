@@ -5,6 +5,23 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.8.4](https://gitlab.com/jimsy/cinder/compare/v0.8.3...v0.8.4) (2023-03-01)
+
+
+
+
+### Bug Fixes:
+
+* cookie signing salt cannot be retrieved at compile time.
+
+### Improvements:
+
+* Make the `cookie_signing_salt` a secret.
+
+* Enable components to add extra properties to their root elements.
+
+* ensure that components only have one element at the root.
+
 ## [v0.8.3](https://gitlab.com/jimsy/cinder/compare/v0.8.2...v0.8.3) (2023-02-28)
 
 

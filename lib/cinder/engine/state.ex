@@ -43,6 +43,7 @@ defmodule Cinder.Engine.State do
       request_id: state.request_id,
       current_routes: state.current_routes,
       current_route: state.current_routes |> List.last(),
+      current_params: state.query_params,
       pid: self()
     }
   end

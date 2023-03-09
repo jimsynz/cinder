@@ -9,7 +9,8 @@ defmodule Cinder.TemplateTest do
 
   alias Cinder.Template.{
     Assigns,
-    Render
+    Render,
+    SlotStack
   }
 
   use Cinder.Template
@@ -320,7 +321,7 @@ defmodule Cinder.TemplateTest do
     |> Assigns.assign(opts)
   end
 
-  defp execute(template, assigns \\ assigns(), slots \\ assigns(), locals \\ assigns()) do
+  defp execute(template, assigns \\ assigns(), slots \\ SlotStack.init(), locals \\ assigns()) do
     template
     |> Render.execute(assigns, slots, locals)
     |> IO.iodata_to_binary()

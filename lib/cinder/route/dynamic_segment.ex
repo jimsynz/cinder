@@ -25,5 +25,14 @@ defmodule Cinder.Route.DynamicSegment do
             {:ok, %{required(String.t()) => String.t()}} | :error
     def match(%{name: name}, input) when byte_size(input) > 0, do: {:ok, %{name => input}}
     def match(_, _), do: :error
+
+    @doc false
+    @spec render(DynamicSegment.t(), %{required(String.t()) => String.Chars.t()}) ::
+            String.t() | no_return
+    def render(segment, params) do
+      params
+      |> Map.fetch!(segment.name)
+      |> to_string()
+    end
   end
 end

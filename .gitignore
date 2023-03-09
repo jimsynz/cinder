@@ -29,3 +29,5 @@ cinder-*.tar
 .DS_Store
 
 priv/static/assets
+assets/node_modules
+test/static/assets

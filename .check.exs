@@ -17,7 +17,7 @@
     # {:compiler, false},
 
     ## ...or have command & args adjusted (e.g. enable skip comments for sobelow)
-    {:sobelow, "mix sobelow --exit --skip"}
+    {:sobelow, "mix sobelow --config"},
 
     ## ...or reordered (e.g. to see output from dialyzer before others)
     # {:dialyzer, order: -1},
@@ -28,5 +28,6 @@
     ## custom new tools may be added (Mix tasks or arbitrary commands)
     # {:my_task, "mix my_task", env: %{"MIX_ENV" => "prod"}},
     # {:my_tool, ["my_tool", "arg with spaces"]}
+    {:esbuild, "mix esbuild prod"}
   ]
 ]

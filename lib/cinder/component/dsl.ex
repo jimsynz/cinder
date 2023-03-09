@@ -46,6 +46,11 @@ defmodule Cinder.Component.Dsl do
             type: :boolean,
             required: false,
             default: false
+          ],
+          default: [
+            type: :any,
+            required: false,
+            default: nil
           ]
         ]
       },
@@ -55,7 +60,7 @@ defmodule Cinder.Component.Dsl do
         target: Slot,
         schema: [
           name: [
-            type: {:or, [{:in, [:default]}, :string]}
+            type: :atom
           ],
           required?: [
             type: :boolean,

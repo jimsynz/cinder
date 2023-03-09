@@ -7,7 +7,8 @@ defmodule Cinder.Template.Rendered.LocalCompose do
   alias Cinder.Template.{
     Assigns,
     Render,
-    Rendered.LocalCompose
+    Rendered.LocalCompose,
+    SlotStack
   }
 
   @type t :: %LocalCompose{
@@ -27,7 +28,7 @@ defmodule Cinder.Template.Rendered.LocalCompose do
     def render(compose), do: Render.render(compose.renderable)
 
     @doc false
-    @spec execute(LocalCompose.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata()
+    @spec execute(LocalCompose.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata()
     def execute(compose, assigns, slots, locals) do
       locals = Assigns.assign(locals, compose.locals)
       Render.execute(compose.renderable, assigns, slots, locals)

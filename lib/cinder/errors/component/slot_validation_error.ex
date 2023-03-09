@@ -3,13 +3,14 @@ defmodule Cinder.Errors.Component.SlotValidationError do
   The error raised when a passed-in slot is not of the type specified by the component definition.
   """
 
-  defexception ~w[component slot type file line col]a
+  defexception ~w[component slot type message file line col]a
   alias __MODULE__
   alias Cinder.Component.PropType
 
   @type t :: %SlotValidationError{
           __exception__: true,
           component: module,
+          message: nil | binary,
           slot: atom,
           type: PropType.type(),
           file: nil | binary,
@@ -36,7 +37,11 @@ defmodule Cinder.Errors.Component.SlotValidationError do
         {file, line, col} -> "at #{file}:#{line}:#{col}"
       end
 
-    "Slot `#{error.slot}` did not match type `#{inspect(error.type)}` when calling component `#{inspect(error.component)}` #{location}"
+    """
+    Slot `#{error.slot}` did not match type `#{inspect(error.type)}` when calling component `#{inspect(error.component)}` #{location}
+
+    #{error.message}
+    """
   end
 
   defimpl Plug.Exception do

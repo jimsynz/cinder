@@ -9,7 +9,8 @@ defmodule Cinder.Template.Rendered.RawExpression do
     Template.Assigns,
     Template.Compilable,
     Template.Render,
-    Template.Rendered.RawExpression
+    Template.Rendered.RawExpression,
+    Template.SlotStack
   }
 
   @type t :: %RawExpression{
@@ -54,7 +55,7 @@ defmodule Cinder.Template.Rendered.RawExpression do
     def render(_expr), do: [:expr]
 
     @doc false
-    @spec execute(RawExpression.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(RawExpression.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(expr, assigns, slots, locals), do: expr.expr.(assigns, slots, locals)
   end
 end

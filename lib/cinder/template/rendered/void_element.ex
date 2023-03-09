@@ -10,7 +10,8 @@ defmodule Cinder.Template.Rendered.VoidElement do
     Template.Render,
     Template.Rendered.Attribute,
     Template.Rendered.Static,
-    Template.Rendered.VoidElement
+    Template.Rendered.VoidElement,
+    Template.SlotStack
   }
 
   @type t :: %VoidElement{
@@ -83,7 +84,7 @@ defmodule Cinder.Template.Rendered.VoidElement do
       do: VoidElement.render(element, &Render.render/1)
 
     @doc false
-    @spec execute(VoidElement.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(VoidElement.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(element, assigns, slots, locals),
       do: VoidElement.render(element, &Render.execute(&1, assigns, slots, locals))
   end

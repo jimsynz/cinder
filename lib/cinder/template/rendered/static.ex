@@ -10,7 +10,8 @@ defmodule Cinder.Template.Rendered.Static do
     Compilable,
     Iodata,
     Render,
-    Rendered.Static
+    Rendered.Static,
+    SlotStack
   }
 
   @type t :: %Static{static: iodata()}
@@ -86,7 +87,7 @@ defmodule Cinder.Template.Rendered.Static do
     def render(node), do: node.static
 
     @doc false
-    @spec execute(Static.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(Static.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(node, _assigns, _slots, _locals), do: node.static
   end
 end

@@ -11,7 +11,8 @@ defmodule Cinder.Template.Rendered.Attribute do
     Template.Compilable,
     Template.HtmlEscaper,
     Template.Render,
-    Template.Rendered.Attribute
+    Template.Rendered.Attribute,
+    Template.SlotStack
   }
 
   @type t :: %Attribute{
@@ -65,6 +66,8 @@ defmodule Cinder.Template.Rendered.Attribute do
   defimpl Render do
     @doc false
     @spec render(Attribute.t()) :: Render.render_list()
+    def render(attribute) when is_nil(attribute.value), do: [attribute.name]
+
     def render(attribute) when is_binary(attribute.value) do
       [attribute.name, "=", ?", HtmlEscaper.escape(attribute.value), ?"]
     end
@@ -74,7 +77,7 @@ defmodule Cinder.Template.Rendered.Attribute do
     end
 
     @doc false
-    @spec execute(Attribute.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata()
+    @spec execute(Attribute.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata()
     def execute(attribute, assigns, slots, locals) when is_function(attribute.value, 3),
       do: attribute.value.(assigns, slots, locals)
 

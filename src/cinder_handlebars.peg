@@ -80,7 +80,7 @@ attribute_with_value <- name:ident space? '=' space? value:(string / handlebars_
     Value = proplists:get_value(value, Node),
     {Name, Value}
   `;
-attribute_simple <- ident `iolist_to_binary(Node)`;
+attribute_simple <- ident `{iolist_to_binary(Node), nil}`;
 
 doctype <- ('<!doctype'  / '<!DOCTYPE') chars:(!">" .)* '>' `{doctype, iolist_to_binary(proplists:get_value(chars, Node))}`;
 comment <- '<!--' chars:(!'-->' .)+ '-->' `{comment, iolist_to_binary(proplists:get_value(chars, Node))}`;

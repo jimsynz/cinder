@@ -11,7 +11,8 @@ defmodule Cinder.Template.Rendered.Block do
     Template.Compilable,
     Template.Render,
     Template.Rendered.Block,
-    Template.Rendered.Static
+    Template.Rendered.Static,
+    Template.SlotStack
   }
 
   @type t :: %Block{
@@ -29,11 +30,15 @@ defmodule Cinder.Template.Rendered.Block do
   defimpl Compilable do
     @doc false
     @spec add_child(Block.t(), Render.t(), keyword) :: Block.t()
-    def add_child(block, child, stage: :positive),
-      do: %{block | positive: [child | block.positive]}
+    def add_child(block, child, opts) do
+      case Keyword.get(opts, :stage) do
+        :positive ->
+          %{block | positive: [child | block.positive]}
 
-    def add_child(block, child, stage: :negative),
-      do: %{block | negative: [child | block.negative]}
+        :negative ->
+          %{block | negative: [child | block.negative]}
+      end
+    end
 
     @doc false
     @spec dynamic?(Block.t()) :: boolean
@@ -80,9 +85,10 @@ defmodule Cinder.Template.Rendered.Block do
         quote context: env.module, generated: true do
           fn node, assigns, slots, locals ->
             slots =
-              slots
-              |> Assigns.push("positive", node.positive)
-              |> Assigns.push("negative", node.negative)
+              SlotStack.push(slots, %{
+                positive: node.positive,
+                negative: node.negative
+              })
 
             unquote(node.expr)
             |> Render.execute(assigns, slots, locals)
@@ -105,7 +111,7 @@ defmodule Cinder.Template.Rendered.Block do
       ]
 
     @doc false
-    @spec execute(Block.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(Block.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(block, assigns, slots, locals),
       do: block.expr.(block, assigns, slots, locals)
   end

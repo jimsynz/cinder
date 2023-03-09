@@ -16,6 +16,8 @@ defmodule Cinder.Engine do
 
   import Macros
 
+  require Logger
+
   @type request_id :: UniqueId.unique_id()
 
   @callback start(request_id) :: DynamicSupervisor.on_start_child()
@@ -40,8 +42,7 @@ defmodule Cinder.Engine do
       @impl true
       @spec init(any) ::
               {:ok,
-               {Supervisor.sup_flags(),
-                [Supervisor.child_spec() | (old_erlang_child_spec :: :supervisor.child_spec())]}}
+               {Supervisor.sup_flags(), [Supervisor.child_spec() | :supervisor.child_spec()]}}
               | :ignore
       def init(_opts), do: Engine.supervisor_init(unquote(app))
 
@@ -83,28 +84,14 @@ defmodule Cinder.Engine do
   def supervisor_init(app) do
     registry = Extension.get_persisted(app, :cinder_engine_registry)
     supervisor = Extension.get_persisted(app, :cinder_engine_supervisor)
-    plug = Extension.get_persisted(app, :cinder_plug)
     pubsub = Extension.get_persisted(app, :cinder_pubsub)
-    port = Extension.get_opt(app, [:cinder], :listen_port, 4000)
 
     [
       {Registry, [keys: :unique, name: registry]},
       {DynamicSupervisor, name: supervisor, extra_arguments: [app]},
-      {Phoenix.PubSub, name: pubsub},
-      {Plug.Cowboy,
-       scheme: :http,
-       plug: plug,
-       options: [
-         port: port,
-         dispatch: [
-           {:_,
-            [
-              {"/ws", Cinder.WebsocketHandler, [app: app]},
-              {:_, Plug.Cowboy.Handler, {plug, [app: app]}}
-            ]}
-         ]
-       ]}
+      {Phoenix.PubSub, name: pubsub}
     ]
+    |> maybe_start_server(app)
     |> Supervisor.init(strategy: :one_for_one)
   end
 
@@ -140,4 +127,42 @@ defmodule Cinder.Engine do
   @spec render_once(Cinder.app(), request_id, Plug.Conn.t()) :: String.t() | no_return
   def render_once(app, request_id, conn),
     do: GenServer.call(via(app, request_id), {:render_once, conn})
+
+  defp maybe_start_server(children, app) do
+    if start_server?(app) do
+      plug = Extension.get_persisted(app, :cinder_plug)
+      port = Extension.get_opt(app, [:cinder], :listen_port, 4000)
+
+      Logger.info(fn ->
+        cowboy_vsn = Application.spec(:cowboy, :vsn)
+
+        "Starting `#{inspect(app)}` with cowboy #{cowboy_vsn} at http://127.0.0.1:#{port}/ (http)"
+      end)
+
+      Enum.concat(children, [
+        {Plug.Cowboy,
+         scheme: :http,
+         plug: plug,
+         options: [
+           port: port,
+           dispatch: [
+             {:_,
+              [
+                {"/ws", Cinder.WebsocketHandler, [app: app]},
+                {:_, Plug.Cowboy.Handler, {plug, [app: app]}}
+              ]}
+           ]
+         ]}
+      ])
+    else
+      children
+    end
+  end
+
+  defp start_server?(app) do
+    otp_app = Extension.get_persisted(app, :otp_app)
+
+    Application.get_env(otp_app, :start_server, false) ||
+      Application.get_env(:cinder, :start_server, false)
+  end
 end

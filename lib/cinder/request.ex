@@ -8,7 +8,8 @@ defmodule Cinder.Request do
             current_route: nil,
             current_routes: [],
             pid: nil,
-            request_id: nil
+            request_id: nil,
+            current_params: %{}
 
   alias Cinder.{
     Engine,
@@ -21,7 +22,8 @@ defmodule Cinder.Request do
           current_route: Route.t(),
           current_routes: [Route.t()],
           pid: pid,
-          request_id: Engine.request_id()
+          request_id: Engine.request_id(),
+          current_params: %{required(binary) => binary}
         }
 
   @behaviour Access

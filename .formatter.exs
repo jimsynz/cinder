@@ -3,6 +3,7 @@ spark_locals_without_parens = [
   base_path: 1,
   cookie_signing_salt: 1,
   data?: 1,
+  default: 1,
   event: 2,
   event: 3,
   listen_port: 1,
@@ -21,8 +22,7 @@ spark_locals_without_parens = [
   slot: 1,
   slot: 2,
   source_path: 1,
-  target_path: 1,
-  trim?: 1
+  target_path: 1
 ]
 
 [

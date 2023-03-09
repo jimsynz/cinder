@@ -68,7 +68,10 @@ defmodule Cinder.MixProject do
     ]
   end
 
-  defp aliases, do: []
+  defp aliases,
+    do: [
+      "spark.formatter": "spark.formatter --extensions=Cinder.Dsl,Cinder.Component.Dsl"
+    ]
 
   defp compilers(env) when env in ~w[dev test]a, do: [:neotoma | Mix.compilers()]
   defp compilers(_env), do: Mix.compilers()

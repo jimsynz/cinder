@@ -10,7 +10,8 @@ defmodule Cinder.Template.Rendered.Element do
     Template.Render,
     Template.Rendered.Attribute,
     Template.Rendered.Element,
-    Template.Rendered.Static
+    Template.Rendered.Static,
+    Template.SlotStack
   }
 
   @type t :: %Element{
@@ -75,7 +76,6 @@ defmodule Cinder.Template.Rendered.Element do
 
     @doc false
     @spec dynamic?(Element.t()) :: boolean()
-
     def dynamic?(element),
       do:
         Enum.any?(element.attributes, &Compilable.dynamic?/1) ||
@@ -137,7 +137,7 @@ defmodule Cinder.Template.Rendered.Element do
     end
 
     @doc false
-    @spec execute(Element.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(Element.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(element, assigns, slots, locals) do
       head = Element.render_head(element, &Render.execute(&1, assigns, slots, locals))
       body = Element.render_body(element, &Render.execute(&1, assigns, slots, locals))

@@ -1,13 +1,12 @@
 defmodule Cinder.Component do
-  alias Cinder.Component.PropType
-
   alias Cinder.{
     Component.Dsl,
     Errors.Component.PropertyValidationError,
     Errors.Component.SlotValidationError,
     Errors.Component.UnexpectedPropertyError,
     Errors.Component.UnexpectedSlotError,
-    Template.Assigns
+    Template.Assigns,
+    Template.SlotStack
   }
 
   alias NimbleOptions.ValidationError
@@ -38,7 +37,6 @@ defmodule Cinder.Component do
     schema =
       component
       |> Extension.get_persisted(:property_schema, [])
-      |> PropType.sanitise_schema()
 
     with expected <- get_expected_assigns(assigns, schema),
          {:ok, _} <- OptionsHelpers.validate(expected, schema),
@@ -72,30 +70,29 @@ defmodule Cinder.Component do
   end
 
   @doc false
-  @spec validate_slots(module, Assigns.t()) :: :ok | {:error, Exception.t()}
-  def validate_slots(component, slots) when is_atom(component) and is_struct(slots, Assigns) do
+  @spec validate_slots(module, SlotStack.t()) :: :ok | {:error, Exception.t()}
+  def validate_slots(component, slots) when is_atom(component) and is_struct(slots, SlotStack) do
     schema =
       component
       |> Extension.get_persisted(:slot_schema, [])
-      |> PropType.sanitise_schema()
 
-    with expected <- get_expected_assigns(slots, schema),
+    with expected <- get_expected_slots(slots, schema),
          {:ok, _} <- OptionsHelpers.validate(expected, schema),
-         extra when map_size(extra) == 0 <- get_extra_assigns(slots, schema) do
+         extra when map_size(extra) == 0 <- get_extra_slots(slots, schema) do
       :ok
     else
       extra when is_map(extra) ->
         {:error,
          UnexpectedSlotError.exception(
            component: component,
-           properties: Map.keys(extra),
+           slots: Map.keys(extra),
            file: to_string(component.__info__(:compile)[:source])
          )}
 
       {:error, error} when is_struct(error, ValidationError) ->
         type =
           component
-          |> Extension.get_entities([:properties])
+          |> Extension.get_entities([:slots])
           |> Enum.find(%{}, &(&1.name == error.key))
           |> Map.get(:type)
 
@@ -121,23 +118,23 @@ defmodule Cinder.Component do
         import Cinder.Component.Script
         use Cinder.Template
 
-        if File.exists?(unquote(maybe_template)) do
-          @external_resource unquote(maybe_template)
-          @template_hash Cinder.Template.hash(unquote(maybe_template))
+        @external_resource unquote(maybe_template)
+        @template_hash Cinder.Template.hash(unquote(maybe_template))
 
+        if File.exists?(unquote(maybe_template)) do
           @doc false
           @spec render :: Cinder.Template.Render.t()
           def render do
             compile_file(unquote(maybe_template))
           end
 
-          @doc false
-          @spec __mix_recompile__? :: boolean
-          def __mix_recompile__? do
-            @template_hash != Cinder.Template.hash(unquote(maybe_template))
-          end
-
           defoverridable render: 0
+        end
+
+        @doc false
+        @spec __mix_recompile__? :: boolean
+        def __mix_recompile__? do
+          @template_hash != Cinder.Template.hash(unquote(maybe_template))
         end
       end
 
@@ -149,7 +146,7 @@ defmodule Cinder.Component do
   defp get_expected_assigns(assigns, schema) do
     schema
     |> Stream.map(&elem(&1, 0))
-    |> Enum.reduce([], fn key, props ->
+    |> Enum.reduce([], fn key, props when is_atom(key) ->
       if Assigns.has_key?(assigns, key) do
         Keyword.put(props, key, assigns[key])
       else
@@ -164,5 +161,32 @@ defmodule Cinder.Component do
     |> Stream.map(&to_string/1)
     |> Enum.reject(&String.starts_with?(&1, "data-"))
     |> then(&Map.drop(assigns.data, &1))
+  end
+
+  defp get_expected_slots(slot_stack, schema) do
+    schema
+    |> Stream.map(&elem(&1, 0))
+    |> Enum.reduce([], fn key, slots when is_atom(key) ->
+      if SlotStack.has_slot?(slot_stack, key) do
+        Keyword.put(slots, key, SlotStack.get(slot_stack, key))
+      else
+        slots
+      end
+    end)
+  end
+
+  defp get_extra_slots(slot_stack, schema) do
+    schema_keys =
+      schema
+      |> Enum.map(&elem(&1, 0))
+      |> MapSet.new()
+
+    slot_stack
+    |> SlotStack.current_keys()
+    |> MapSet.new()
+    |> MapSet.difference(schema_keys)
+    |> Enum.reduce(%{}, fn key, slots ->
+      Map.put(slots, key, SlotStack.get(slot_stack, key))
+    end)
   end
 end

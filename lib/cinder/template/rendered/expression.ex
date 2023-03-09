@@ -10,7 +10,8 @@ defmodule Cinder.Template.Rendered.Expression do
     Template.Compilable,
     Template.HtmlEscaper,
     Template.Render,
-    Template.Rendered.Expression
+    Template.Rendered.Expression,
+    Template.SlotStack
   }
 
   @type t :: %Expression{
@@ -57,7 +58,7 @@ defmodule Cinder.Template.Rendered.Expression do
     def render(_expr), do: [:expr]
 
     @doc false
-    @spec execute(Expression.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(Expression.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(expr, assigns, slots, locals), do: expr.expr.(assigns, slots, locals)
   end
 end

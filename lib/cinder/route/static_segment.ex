@@ -25,5 +25,10 @@ defmodule Cinder.Route.StaticSegment do
             {:ok, %{required(String.t()) => String.t()}} | :error
     def match(%StaticSegment{segment: segment}, input) when segment == input, do: {:ok, %{}}
     def match(_, _), do: :error
+
+    @doc false
+    @spec render(StaticSegment.t(), %{required(String.t()) => String.Chars.t()}) ::
+            String.t() | no_return
+    def render(%StaticSegment{segment: segment}, _), do: segment
   end
 end

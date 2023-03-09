@@ -12,6 +12,7 @@ defmodule Cinder.Component.TemplateTransformer do
     Template.Rendered.Attribute,
     Template.Rendered.Document,
     Template.Rendered.Element,
+    Template.Rendered.Static,
     Template.Rendered.VoidElement
   }
 
@@ -25,6 +26,9 @@ defmodule Cinder.Component.TemplateTransformer do
       when is_struct(element, Element) or is_struct(element, VoidElement) ->
         element = transform_element(dsl_state, element)
         %{document | children: [element]}
+
+      [static] when is_struct(static, Static) ->
+        document
 
       _ ->
         raise RootElementError,

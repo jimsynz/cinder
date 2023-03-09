@@ -3,7 +3,7 @@ defmodule Cinder.Errors.Component.PropertyValidationError do
   The error raised when a passed-in property is not of the type specified by the component definition.
   """
 
-  defexception ~w[component property type file line col]a
+  defexception ~w[component property type message file line col]a
   alias __MODULE__
   alias Cinder.Component.PropType
 
@@ -11,6 +11,7 @@ defmodule Cinder.Errors.Component.PropertyValidationError do
           __exception__: true,
           component: module,
           property: atom,
+          message: nil | binary,
           type: PropType.type(),
           file: nil | binary,
           line: nil | non_neg_integer(),
@@ -36,7 +37,11 @@ defmodule Cinder.Errors.Component.PropertyValidationError do
         {file, line, col} -> "at #{file}:#{line}:#{col}"
       end
 
-    "Property `#{error.property}` did not match type `#{inspect(error.type)}` when calling component `#{inspect(error.component)}` #{location}"
+    """
+    Property `#{error.property}` did not match type `#{inspect(error.type)}` when calling component `#{inspect(error.component)}` #{location}
+
+    #{error.message}
+    """
   end
 
   defimpl Plug.Exception do

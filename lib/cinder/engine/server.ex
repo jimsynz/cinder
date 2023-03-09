@@ -4,6 +4,8 @@ defmodule Cinder.Engine.Server do
   """
   use GenServer, restart: :transient
 
+  alias Cinder.Template.SlotStack
+
   alias Cinder.{
     Engine,
     Engine.Macros,
@@ -44,7 +46,7 @@ defmodule Cinder.Engine.Server do
     html =
       state
       |> render(true)
-      |> Render.execute(Assigns.init(), Assigns.init(), Assigns.init())
+      |> Render.execute(Assigns.init(), SlotStack.init(), Assigns.init())
 
     conn =
       conn
@@ -186,7 +188,6 @@ defmodule Cinder.Engine.Server do
     |> then(&(&1 * 1_000))
   end
 
-  # defp render(state, include_layout)
   defp render(state, false) do
     state.current_routes
     |> Enum.reverse()
@@ -239,7 +240,7 @@ defmodule Cinder.Engine.Server do
     html =
       state
       |> render(false)
-      |> Render.execute(Assigns.init(), Assigns.init(), Assigns.init())
+      |> Render.execute(Assigns.init(), SlotStack.init(), Assigns.init())
 
     for pid <- state.sockets do
       send(pid, {:rerender, html})

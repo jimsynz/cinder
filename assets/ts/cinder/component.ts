@@ -1,26 +1,24 @@
+import Cinder from "../cinder";
+
 export default class CinderComponent {
   element: HTMLElement;
   id: string;
   eventHandlers: Map<string, (event: Event) => void>;
+  cinder: Cinder;
 
-  constructor(element: HTMLElement) {
+  constructor(element: HTMLElement, cinder: Cinder) {
     this.element = element;
-
-    let maybeId = element.dataset['cinderId'];
-    if (maybeId) {
-      this.id = maybeId;
-    } else {
-      throw new Error('Missing "cinderId" data attribute');
-    }
+    this.cinder = cinder;
+    this.eventHandlers = new Map<string, (event: Event) => void>();
   }
 
   registerEvent(eventName: string, callback: (event: Event) => void) {
-    this.eventHandlers[eventName] = callback;
+    this.eventHandlers.set(eventName, callback);
     this.element.addEventListener(eventName, this);
   }
 
   handleEvent(event: Event) {
-    let handler = this.eventHandlers[event.type];
+    let handler = this.eventHandlers.get(event.type);
     if (handler) {
       handler.call(this.element, event);
       return;

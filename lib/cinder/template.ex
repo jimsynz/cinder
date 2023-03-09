@@ -27,9 +27,14 @@ defmodule Cinder.Template do
   # sobelow_skip ["Traversal.FileModule"]
   def hash(path) do
     if File.exists?(path) do
-      path
-      |> File.read!()
-      |> :erlang.md5()
+      contents = File.read!(path)
+      md5 = :erlang.md5(path <> contents)
+
+      <<1>> <> md5
+    else
+      md5 = :erlang.md5(path)
+
+      <<0>> <> md5
     end
   end
 end

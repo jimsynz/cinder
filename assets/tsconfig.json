@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "target": "ES2019",
+    "isolatedModules": true
+  },
+}

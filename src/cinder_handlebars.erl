@@ -140,7 +140,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'attribute_simple'(input(), index()) -> parse_result().
 'attribute_simple'(Input, Index) ->
-  p(Input, Index, 'attribute_simple', fun(I,D) -> (fun 'ident'/2)(I,D) end, fun(Node, _Idx) ->iolist_to_binary(Node) end).
+  p(Input, Index, 'attribute_simple', fun(I,D) -> (fun 'ident'/2)(I,D) end, fun(Node, _Idx) ->{iolist_to_binary(Node), nil} end).
 
 -spec 'doctype'(input(), index()) -> parse_result().
 'doctype'(Input, Index) ->

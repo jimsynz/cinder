@@ -74,6 +74,14 @@ defmodule Cinder.Template.Macros do
     {:%{}, [], escaped}
   end
 
+  def escape(tuple) when is_tuple(tuple) do
+    tuple
+    |> Tuple.to_list()
+    |> Enum.map(&escape/1)
+    |> List.to_tuple()
+  end
+
   def escape(other) when is_list(other), do: Enum.map(other, &escape(&1))
+
   def escape(other), do: Macro.escape(other)
 end

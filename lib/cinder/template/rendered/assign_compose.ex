@@ -5,7 +5,7 @@ defmodule Cinder.Template.Rendered.AssignCompose do
   """
   defstruct assigns: nil, renderable: nil
 
-  alias Cinder.Template.{Assigns, Render, Rendered.AssignCompose}
+  alias Cinder.Template.{Assigns, Render, Rendered.AssignCompose, SlotStack}
 
   @type t :: %AssignCompose{
           assigns: Assigns.t(),
@@ -24,7 +24,7 @@ defmodule Cinder.Template.Rendered.AssignCompose do
     def render(compose), do: Render.render(compose.renderable)
 
     @doc false
-    @spec execute(AssignCompose.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(AssignCompose.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(compose, _assigns, slots, locals),
       do: Render.execute(compose.renderable, compose.assigns, slots, locals)
   end

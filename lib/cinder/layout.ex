@@ -33,8 +33,8 @@ defmodule Cinder.Layout do
       @behaviour Cinder.Layout
       use Cinder.Template
 
-      @external_resource unquote(template)
-      @template_hash Cinder.Template.hash(unquote(template))
+      @external_resource unquote(app_layout)
+      @template_hash Cinder.Template.hash(unquote(app_layout))
 
       @impl true
       @spec template :: Render.t()
@@ -49,7 +49,7 @@ defmodule Cinder.Layout do
       @doc false
       @spec __mix_recompile__? :: boolean
       def __mix_recompile__? do
-        @template_hash != Cinder.Template.hash(unquote(template))
+        @template_hash != Cinder.Template.hash(unquote(app_layout))
       end
 
       defoverridable template: 0

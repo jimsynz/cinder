@@ -154,22 +154,22 @@ defmodule Cinder.Route do
       @doc false
       @impl true
       @spec enter(Route.data(), Route.params()) :: Route.on_enter()
-      def enter(data, params), do: {:active, %{data | params: params}}
+      def enter(data, _params), do: {:active, data}
 
       @doc false
       @impl true
       @spec exit(Route.data()) :: Route.on_exit()
-      def exit(data), do: {:inactive, %{data | params: nil}}
+      def exit(data), do: {:inactive, data}
 
       @doc false
       @impl true
       @spec error(Route.data(), Route.params()) :: Route.on_error()
-      def error(data, params), do: {:error, %{data | params: params}}
+      def error(data, _params), do: {:error, data}
 
       @doc false
       @impl true
       @spec assigns(Route.data()) :: Route.assigns()
-      def assigns(data), do: %{params: data.params}
+      def assigns(data), do: data
 
       deftemplates(unquote(app))
 

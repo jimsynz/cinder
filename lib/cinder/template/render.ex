@@ -3,7 +3,7 @@ defprotocol Cinder.Template.Render do
   A protocol for rendering compiled templates.
   """
 
-  alias Cinder.Template.Assigns
+  alias Cinder.Template.{Assigns, SlotStack}
 
   @type render_list :: iolist | [atom | {atom, render_list}]
 
@@ -19,13 +19,13 @@ defprotocol Cinder.Template.Render do
   Execute a template (ie render it) including any dynamic content with the data
   provided.
   """
-  @spec execute(t, Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+  @spec execute(t, Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
   def execute(compiled, assigns, slots, locals)
 end
 
 defimpl Cinder.Template.Render, for: List do
   @moduledoc false
-  alias Cinder.Template.{Assigns, Render}
+  alias Cinder.Template.{Assigns, Render, SlotStack}
 
   @doc false
   @spec render([Render.t()]) :: Render.render_list()
@@ -39,7 +39,7 @@ defimpl Cinder.Template.Render, for: List do
   end
 
   @doc false
-  @spec execute([Render.t()], Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+  @spec execute([Render.t()], Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
   def execute(list, assigns, slots, locals) do
     Enum.map(list, fn
       node when is_map(node) -> Render.execute(node, assigns, slots, locals)

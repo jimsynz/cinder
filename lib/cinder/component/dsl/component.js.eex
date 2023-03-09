@@ -1,8 +1,8 @@
 import CinderComponent from "./cinder/component";
 
 export default class <%= @class_name %> extends CinderComponent {
-  constructor(element) {
-    super(element);
+  constructor(element, cinder) {
+    super(element, cinder);
 
     <%= for event <- @events do %>
     this.registerEvent('<%= event.name %>', function(event) {

@@ -2,4 +2,9 @@
 
 <div class="flex justify-center">
   {{yield}}
+
+  <div>
+    <h2>Current route:</h2>
+    <pre><code>{{current_route @request}}</code></pre>
+  </div>
 </div>

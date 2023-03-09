@@ -15,7 +15,8 @@ defmodule Cinder.Template.Rendered.Document do
     Template.Compilable,
     Template.Render,
     Template.Rendered.Document,
-    Template.Rendered.Static
+    Template.Rendered.Static,
+    Template.SlotStack
   }
 
   @type t :: %Document{
@@ -104,7 +105,7 @@ defmodule Cinder.Template.Rendered.Document do
     end
 
     @doc false
-    @spec execute(Document.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(Document.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(document, assigns, slots, locals) do
       locals = document.merge_locals.(locals)
 

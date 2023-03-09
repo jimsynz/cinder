@@ -10,4 +10,10 @@ defprotocol Cinder.Route.Segment do
   """
   @spec match(t, String.t()) :: {:ok, %{required(String.t()) => String.t()}} | :error
   def match(segment, input)
+
+  @doc """
+  Convert a previously matched segment back into a string.
+  """
+  @spec render(t, %{required(String.t()) => String.Chars.t()}) :: String.t() | no_return
+  def render(segment, params)
 end

@@ -10,7 +10,6 @@ defmodule Cinder.Template.Compiler do
   }
 
   alias Cinder.Template.{
-    Assigns,
     Compilable,
     Render,
     Rendered.Attribute,
@@ -22,7 +21,8 @@ defmodule Cinder.Template.Compiler do
     Rendered.Property,
     Rendered.RawExpression,
     Rendered.Static,
-    Rendered.VoidElement
+    Rendered.VoidElement,
+    SlotStack
   }
 
   defguardp is_element(node) when is_struct(node, Element) or is_struct(node, VoidElement)
@@ -104,9 +104,10 @@ defmodule Cinder.Template.Compiler do
     |> compile_template(ast, opts, env)
   end
 
+  # sobelow_skip ["DOS.StringToAtom"]
   defp compile_template(parent, [{:slot, name, content} | ast], opts, env) do
     parent
-    |> compile_template(content, [{:slot, name} | opts], env)
+    |> compile_template(content, [{:slot, String.to_atom(name)} | opts], env)
     |> compile_template(ast, opts, env)
   end
 
@@ -150,14 +151,14 @@ defmodule Cinder.Template.Compiler do
   end
 
   defp compile_template(parent, [{:attr, {name, value}} | ast], opts, env)
-       when is_binary(value) and is_element(parent) do
+       when (is_binary(value) or is_nil(value)) and is_element(parent) do
     parent
     |> Compilable.add_child(Attribute.init(name, value), opts)
     |> compile_template(ast, opts, env)
   end
 
   defp compile_template(parent, [{:attr, {name, value}} | ast], opts, env)
-       when is_binary(value) and is_component(parent) do
+       when (is_binary(value) or is_nil(value)) and is_component(parent) do
     parent
     |> Compilable.add_child(Property.init(name, value), opts)
     |> compile_template(ast, opts, env)
@@ -228,16 +229,16 @@ defmodule Cinder.Template.Compiler do
       args
       |> compile_args(env)
       |> case do
-        [] -> "default"
-        [slot_name | _] -> to_string(slot_name)
+        [] -> :default
+        [slot_name | _] -> String.to_atom(slot_name)
       end
 
     quote generated: true, context: env.module do
-      with {nil, _} <- Assigns.pop(slots, unquote(slot_name)),
-           {nil, _} <- Assigns.pop(slots, "positive") do
+      with :error <- SlotStack.fetch(slots, unquote(slot_name)),
+           :error <- SlotStack.fetch_current(slots, :positive) do
         raise RuntimeError, "Slot `#{unquote(slot_name)}` is missing."
       else
-        {slot, slots} -> Render.execute(slot, assigns, slots, locals)
+        {:ok, slot} -> Render.execute(slot, assigns, SlotStack.pop(slots), locals)
       end
     end
   end
@@ -264,18 +265,27 @@ defmodule Cinder.Template.Compiler do
       args
       |> compile_args(env)
       |> case do
-        [] -> "default"
-        [slot_name | _] -> to_string(slot_name)
+        [] -> :default
+        [slot_name | _] -> String.to_atom(slot_name)
       end
 
     quote generated: true, context: env.module do
-      case Assigns.pop(slots, unquote(slot_name)) do
-        {nil, _} ->
-          raise RuntimeError, "Slot `#{unquote(slot_name)}` is missing."
-
-        {slot, slots} ->
-          Render.execute(slot, assigns, slots, locals)
+      case SlotStack.fetch(slots, unquote(slot_name)) do
+        {:ok, slot} -> Render.execute(slot, assigns, SlotStack.pop(slots), locals)
+        :error -> raise RuntimeError, "Slot `#{unquote(slot_name)}` is missing."
       end
+    end
+  end
+
+  defp compile_expr({:expr, {:has_slot, [name]}}, env) when is_binary(name) do
+    quote context: env.module, generated: true do
+      SlotStack.has_slot?(slots, unquote(String.to_atom(name)))
+    end
+  end
+
+  defp compile_expr({:expr, {:has_slot, [name]}}, env) when is_atom(name) do
+    quote context: env.module, generated: true do
+      SlotStack.has_slot?(slots, unquote(name))
     end
   end
 

@@ -22,9 +22,15 @@ defmodule Cinder.Dsl do
         type: :string,
         required: true
       ],
-      resource: [
-        type: {:or, [{:spark_behaviour, Ash.Resource}, {:in, [nil]}]},
-        default: nil
+      short_name: [
+        type: :atom,
+        required: false,
+        default: nil,
+        doc: """
+        A shorthand name for the route.
+
+        Defaults to the module name underscored.
+        """
       ]
     ],
     entities: [children: []]

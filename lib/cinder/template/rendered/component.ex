@@ -9,16 +9,18 @@ defmodule Cinder.Template.Rendered.Component do
     Template.Assigns,
     Template.Compilable,
     Template.Render,
+    Template.Rendered.AssignCompose,
     Template.Rendered.Attribute,
     Template.Rendered.Component,
-    Template.Rendered.Static
+    Template.Rendered.Static,
+    Template.SlotStack
   }
 
   @type t :: %Component{
           attributes: [Attribute.t()],
           name: atom,
           optimised?: boolean,
-          slots: %{required(atom | binary) => [Render.t()]}
+          slots: %{required(atom) => [Render.t()]}
         }
 
   @doc false
@@ -37,7 +39,7 @@ defmodule Cinder.Template.Rendered.Component do
       do: %{component | slots: Map.update(component.slots, slot, [child], &[child | &1])}
 
     def add_child(component, child, opts),
-      do: add_child(component, child, [{:slot, "default"} | opts])
+      do: add_child(component, child, [{:slot, :default} | opts])
 
     @doc false
     @spec dynamic?(Component.t()) :: boolean
@@ -69,6 +71,7 @@ defmodule Cinder.Template.Rendered.Component do
 
           {name, children}
         end)
+        |> Map.new()
 
       module =
         case Macro.Env.fetch_alias(env, component.name) do
@@ -92,7 +95,7 @@ defmodule Cinder.Template.Rendered.Component do
   end
 
   defimpl Render do
-    alias Cinder.Template.Assigns
+    alias Cinder.Template.{Assigns, SlotStack}
     @dialyzer {:nowarn_function, render: 1}
 
     @doc false
@@ -100,7 +103,7 @@ defmodule Cinder.Template.Rendered.Component do
     def render(component), do: component.name.render() |> Render.render()
 
     @doc false
-    @spec execute(Component.t(), Assigns.t(), Assigns.t(), Assigns.t()) :: iodata
+    @spec execute(Component.t(), Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
     def execute(component, parent_assigns, slots, locals) do
       assigns =
         if Assigns.has_key?(parent_assigns, :request) do
@@ -121,9 +124,12 @@ defmodule Cinder.Template.Rendered.Component do
         end)
 
       slots =
-        Enum.reduce(component.slots, slots, fn {name, children}, slots ->
-          Assigns.push(slots, name, children)
+        component.slots
+        |> Enum.map(fn {name, slot} ->
+          {name, AssignCompose.init(slot, parent_assigns)}
         end)
+        |> Map.new()
+        |> then(&SlotStack.push(slots, &1))
 
       with :ok <- Cinder.Component.validate_props(component.name, assigns),
            :ok <- Cinder.Component.validate_slots(component.name, slots) do

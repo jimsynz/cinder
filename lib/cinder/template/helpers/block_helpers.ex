@@ -22,11 +22,11 @@ defmodule Cinder.Template.Helpers.Block do
     end
   end
 
-  def block_if(condition, _opts) when condition in @falsy do
+  def block_if(condition, opts) when condition in @falsy do
     ~B"{{yield 'negative'}}"
   end
 
-  def block_if(_condition, _opts) do
+  def block_if(condition, opts) do
     ~B"{{yield 'positive'}}"
   end
 
@@ -44,11 +44,11 @@ defmodule Cinder.Template.Helpers.Block do
     end
   end
 
-  def block_unless(condition, _opts) when condition in @falsy do
+  def block_unless(condition, opts) when condition in @falsy do
     ~B"{{yield 'positive'}}"
   end
 
-  def block_unless(_condition, _opts) do
+  def block_unless(condition, opts) do
     ~B"{{yield 'negative'}}"
   end
 

@@ -9,7 +9,7 @@ defmodule Cinder.Errors.Component.UnexpectedSlotError do
   @type t :: %UnexpectedSlotError{
           __exception__: true,
           component: module,
-          slots: atom,
+          slots: [atom],
           file: nil | binary,
           line: nil | non_neg_integer(),
           col: nil | non_neg_integer()

@@ -2,7 +2,16 @@ defmodule Cinder.Component.Dsl.Transformer do
   @moduledoc false
 
   alias Cinder.Request
-  alias Cinder.Component.{Dsl.Event, Dsl.Property, Dsl.Slot, Script, TemplateTransformer}
+
+  alias Cinder.Component.{
+    Dsl.Event,
+    Dsl.Property,
+    Dsl.Slot,
+    PropType,
+    Script,
+    TemplateTransformer
+  }
+
   alias Cinder.Template.Macros
   alias Spark.{Dsl, Dsl.Transformer, Error.DslError}
   use Transformer
@@ -142,6 +151,7 @@ defmodule Cinder.Component.Dsl.Transformer do
         {slot.name, [type: {:protocol, Cinder.Template.Render}, required: slot.required?]}
       end)
       |> Keyword.put_new(:default, type: {:protocol, Cinder.Template.Render}, required: false)
+      |> PropType.sanitise_schema()
 
     {:ok, Transformer.persist(dsl_state, :slot_schema, slot_schema)}
   end
@@ -151,17 +161,21 @@ defmodule Cinder.Component.Dsl.Transformer do
       dsl_state
       |> Transformer.get_entities([:component])
       |> Stream.filter(&is_struct(&1, Property))
-      |> Enum.map(fn
-        prop when prop.allow_nil? == true ->
-          {prop.name, [type: {:or, [prop.type, {:in, [nil]}]}, required: prop.required?]}
+      |> Enum.map(fn prop ->
+        type =
+          if prop.allow_nil? do
+            {:option, prop.type}
+          else
+            prop.type
+          end
 
-        prop ->
-          {prop.name, [type: prop.type, required: prop.required?]}
+        {prop.name, [type: type, required: prop.required?, default: prop.default]}
       end)
       |> Keyword.put_new(:request,
         type: {:struct, Request},
         required: false
       )
+      |> PropType.sanitise_schema()
 
     {:ok, Transformer.persist(dsl_state, :property_schema, property_schema)}
   end

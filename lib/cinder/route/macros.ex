@@ -1,6 +1,6 @@
 defmodule Cinder.Route.Macros do
   @moduledoc false
-  alias Cinder.{Route, Template}
+  alias Cinder.{Dsl.Info, Route, Template}
   alias Spark.Dsl.Extension
 
   @doc false
@@ -8,27 +8,19 @@ defmodule Cinder.Route.Macros do
   defmacro deftemplates(app) do
     app = Macro.expand(app, __CALLER__)
 
-    underscored =
-      app
-      |> Extension.get_persisted(:cinder_route_namespace)
-      |> then(fn namespace ->
-        __CALLER__.module
-        |> to_string()
-        |> String.replace_prefix("#{namespace}.", "")
-      end)
-      |> Macro.underscore()
+    {:ok, entity} = Info.fetch_route_by_module(app, __CALLER__.module)
 
     possible_templates =
       app
       |> Extension.get_persisted(:cinder_template_base_path)
       |> then(fn base_path ->
         [
-          active: "#{underscored}/active.hbs",
-          base: "#{underscored}.hbs",
-          error: "#{underscored}/error.hbs",
-          inactive: "#{underscored}/inactive.hbs",
-          loading: "#{underscored}/loading.hbs",
-          unloading: "#{underscored}/unloading.hbs"
+          active: "#{entity.short_name}/active.hbs",
+          base: "#{entity.short_name}.hbs",
+          error: "#{entity.short_name}/error.hbs",
+          inactive: "#{entity.short_name}/inactive.hbs",
+          loading: "#{entity.short_name}/loading.hbs",
+          unloading: "#{entity.short_name}/unloading.hbs"
         ]
         |> Enum.map(fn {state, path} -> {state, Path.join(base_path, path)} end)
       end)

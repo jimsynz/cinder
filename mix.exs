@@ -57,7 +57,7 @@ defmodule Cinder.MixProject do
       {:ex_check, "~> 0.15", only: ~w[dev test]a, runtime: false},
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
-      {:tailwind, "~> 0.1.9", only: :dev},
+      {:tailwind, "~> 0.2.0", only: :dev},
       {:mix_audit, "~> 2.1", only: ~w[dev test]a, runtime: false},
       {:sobelow, "~> 0.11", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,

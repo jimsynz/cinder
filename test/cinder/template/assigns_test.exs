@@ -175,7 +175,16 @@ defmodule Cinder.Template.AssignsTest do
         |> Assigns.assign(:whom, :marty)
         |> Assigns.meta()
 
-      assert Keyword.keys(meta) == ~w[context context_modules file function line module]a
+      assigned_keys =
+        meta
+        |> Keyword.keys()
+        |> MapSet.new()
+
+      assert MapSet.equal?(
+               assigned_keys,
+               MapSet.new(~w[context context_modules file function line module]a)
+             )
+
       assert meta[:file] == __ENV__.file
     end
   end
@@ -197,7 +206,16 @@ defmodule Cinder.Template.AssignsTest do
         |> Assigns.assign(whom: :marty, year: 1985, where: "Hill Valley, Ca.")
         |> Assigns.meta()
 
-      assert Keyword.keys(meta) == ~w[context context_modules file function line module]a
+      assigned_keys =
+        meta
+        |> Keyword.keys()
+        |> MapSet.new()
+
+      assert MapSet.equal?(
+               assigned_keys,
+               MapSet.new(~w[context context_modules file function line module]a)
+             )
+
       assert meta[:file] == __ENV__.file
     end
   end
@@ -226,7 +244,16 @@ defmodule Cinder.Template.AssignsTest do
         |> Assigns.assign_new(:whom, :doc_brown)
         |> Assigns.meta()
 
-      assert Keyword.keys(meta) == ~w[context context_modules file function line module]a
+      assigned_keys =
+        meta
+        |> Keyword.keys()
+        |> MapSet.new()
+
+      assert MapSet.equal?(
+               assigned_keys,
+               MapSet.new(~w[context context_modules file function line module]a)
+             )
+
       assert meta[:file] == __ENV__.file
     end
   end

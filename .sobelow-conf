@@ -8,5 +8,5 @@
   out: "",
   threshold: "low",
   ignore: [""],
-  ignore_files: ["/Users/jmshrtn/Dev/gitlab.com/jimsy/cinder/lib/cinder/template/compiler.ex"]
+  ignore_files: ["lib/cinder/template/compiler.ex"]
 ]

@@ -1,6 +1,6 @@
 # Cinder
 
-[![pipeline status](https://gitlab.com/jimsy/cinder/badges/main/pipeline.svg)](https://gitlab.com/jimsy/cinder/commits/main)
+[![pipeline status](https://code.harton.nz/james/cinder/badges/main/pipeline.svg)](https://code.harton.nz/james/cinder/commits/main)
 [![Hippocratic License HL3-FULL](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-FULL&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/full.html)
 
 Cinder is a framework for building real-time web applications in Elixir with a
@@ -46,7 +46,7 @@ to try it you should install it directly from the repository:
 ```elixir
 def deps do
   [
-    {:cinder, git: "https://gitlab.com/jimsy/cinder", tag: "v0.8"}
+    {:cinder, git: "https://code.harton.nz/james/cinder", tag: "v0.8"}
   ]
 end
 ```

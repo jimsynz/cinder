@@ -30,7 +30,7 @@ defmodule Cinder.MixProject do
       maintainers: ["James Harton <james@harton.nz>"],
       licenses: ["HL3-FULL"],
       links: %{
-        "Source" => "https://gitlab.com/jimsy/cinder"
+        "Source" => "https://code.harton.nz/james/cinder"
       }
     ]
   end
@@ -61,7 +61,7 @@ defmodule Cinder.MixProject do
       {:mix_audit, "~> 2.1", only: ~w[dev test]a, runtime: false},
       {:sobelow, "~> 0.12", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,
-       git: "https://gitlab.com/jimsy/neotoma_compiler.git",
+       git: "https://code.harton.nz/james/neotoma_compiler.git",
        branch: :main,
        only: ~w[dev test]a,
        runtime: false}

@@ -155,7 +155,7 @@ git_ops:
         curl --header "JOB_TOKEN: ${CI_JOB_TOKEN}" --upload-file "priv/static/cinder.js" "${PACKAGE_REGISTRY_URL}/${APP_NAME}/${APP_VERSION}/${APP_NAME}-${APP_VERSION}.js"
         curl --header "JOB_TOKEN: ${CI_JOB_TOKEN}" --upload-file "artifacts/${APP_NAME}-${APP_VERSION}.tar.gz" "${PACKAGE_REGISTRY_URL}/${APP_NAME}/${APP_VERSION}/${APP_NAME}-${APP_VERSION}.tar.gz"
         curl --header "JOB_TOKEN: ${CI_JOB_TOKEN}" --upload-file "artifacts/${APP_NAME}-${APP_VERSION}-docs.tar.gz" "${PACKAGE_REGISTRY_URL}/${APP_NAME}/${APP_VERSION}/${APP_NAME}-${APP_VERSION}-docs.tar.gz"
-        git push "https://project_${CI_PROJECT_ID}_bot:${RELEASE_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}" "refs/tags/v${APP_VERSION}"
+        git push "https://project_${CI_PROJECT_ID}_bot:${RELEASE_TOKEN}@code.harton.nz/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}" "refs/tags/v${APP_VERSION}"
       fi
   artifacts:
     paths:

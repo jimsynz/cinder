@@ -56,12 +56,15 @@ steps:
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
     ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - restore ASDF cache
+  - restore build cache
   commands:
-   - asdf_install
-   - asdf mix local.hex --force
-   - asdf mix local.rebar --force
-   - asdf mix deps.get
-   - asdf mix deps.compile
+  - asdf_install
+  - asdf mix local.hex --force
+  - asdf mix local.rebar --force
+  - asdf mix deps.get
+  - asdf mix deps.compile
 
 - name: store ASDF cache
   image: meltwater/drone-cache
@@ -72,6 +75,8 @@ steps:
     AWS_SECRET_ACCESS_KEY:
       from_secret: SECRET_ACCESS_KEY
     AWS_PLUGIN_PATH_STYLE: true
+  depends_on:
+  - install dependencies
   settings:
     rebuild: true
     endpoint:
@@ -93,6 +98,8 @@ steps:
     AWS_SECRET_ACCESS_KEY:
       from_secret: SECRET_ACCESS_KEY
     AWS_PLUGIN_PATH_STYLE: true
+  depends_on:
+  - install dependencies
   settings:
     rebuild: true
     endpoint:
@@ -107,3 +114,191 @@ steps:
     - _build
     - .hex
     - .mix
+
+---
+
+kind: pipeline
+type: docker
+name: test
+
+depends_on:
+  - build
+
+steps:
+- name: restore ASDF cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    restore: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    cache_key: 'asdf-{{ checksum ".tool-versions" }}'
+    mount:
+    - .asdf
+
+- name: restore build cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    restore: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    mount:
+    - deps
+    - _build
+    - .hex
+    - .mix
+
+- name: mix compile
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - restore ASDF cache
+  - restore build cache
+  commands:
+  - asdf mix compile --warnings-as-errors
+
+- name: mix test
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix test
+
+- name: mix credo
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix credo --strict
+
+- name: mix sobelow
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix sobelow --skip
+
+- name: mix hex.audit
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix hex.audit
+
+- name: mix format
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix format --check-formatted
+
+- name: mix spark.formatter
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix spark.formatter --check
+
+- name: mix deps.unlock
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix deps.unlock --check-unused
+
+- name: mix doctor
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - asdf mix doctor --full
+
+- name: mix git_ops.check_message
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  depends_on:
+  - mix compile
+  commands:
+  - git log -1 --format=%s > .last_commit_message
+  - asdf mix git_ops.check_message .last_commit_message
+

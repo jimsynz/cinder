@@ -4,24 +4,36 @@ name: build
 
 steps:
 - name: restore cache
-  image: drillster/drone-volume-cache
+  image: meltwater/drone-cache
+  pull: true
   environment:
-    MIX_ENV: test
-    HEX_HOME: "$DRONE_WORKSPACE/.hex"
-    MIX_HOME: "$DRONE_WORKSPACE/.mix"
-  volumes: 
-  - name: cache
-    path: /cache
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
   settings:
     restore: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
     mount:
-    - $HOME/.asdf
-    - $DRONE_WORKSPACE/deps
-    - $DRONE_WORKSPACE/_build
-    - $DRONE_WORKSPACE/.hex
-    - $DRONE_WORKSPACE/.mix
+    - .asdf
+    - deps
+    - _build
+    - .hex
+    - .mix
+
 - name: install dependencies
   image: code.harton.nz/james/asdf_container:latest
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
   commands:
    - asdf_install
    - asdf mix local.hex --force
@@ -29,8 +41,26 @@ steps:
    - asdf mix deps.get
    - asdf mix deps.compile
 
-
-volumes:
-- name: cache
-  host:
-    path: /tmp/cache/$DRONE_REPO/
+- name: store cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    rebuild: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    mount:
+    - .asdf
+    - deps
+    - _build
+    - .hex
+    - .mix

@@ -3,7 +3,7 @@ type: docker
 name: build
 
 steps:
-- name: restore cache
+- name: restore ASDF cache
   image: meltwater/drone-cache
   pull: true
   environment:
@@ -20,8 +20,29 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
+    cache_key: 'asdf-{{ checksum ".tool-versions" }}'
     mount:
     - .asdf
+
+- name: restore build cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    restore: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    mount:
     - deps
     - _build
     - .hex
@@ -42,7 +63,7 @@ steps:
    - asdf mix deps.get
    - asdf mix deps.compile
 
-- name: store cache
+- name: store ASDF cache
   image: meltwater/drone-cache
   pull: true
   environment:
@@ -59,8 +80,29 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
+    cache_key: 'asdf-{{ checksum ".tool-versions" }}'
     mount:
     - .asdf
+
+- name: store build cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    rebuild: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    mount:
     - deps
     - _build
     - .hex

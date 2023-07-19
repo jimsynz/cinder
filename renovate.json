@@ -1,5 +1,5 @@
 {
   "extends": [
-    "gitlab>jimsy/renovate"
+    "gitea>james/renovate"
   ]
 }

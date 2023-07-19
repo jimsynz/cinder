@@ -1,0 +1,10 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: build
+  image: code.harton.nz/james/asdf_container:latest
+  commands:
+   - asdf_install
+   - /entrypoint.sh mix deps.get

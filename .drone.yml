@@ -29,6 +29,7 @@ steps:
 
 - name: install dependencies
   image: code.harton.nz/james/asdf_container:latest
+  pull: true
   environment:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex

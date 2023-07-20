@@ -61,10 +61,13 @@ steps:
   - restore build cache
   commands:
   - asdf_install
-  - asdf mix local.hex --force
-  - asdf mix local.rebar --force
-  - asdf mix deps.get
-  - asdf mix deps.compile
+  - rm -rf .asdf/downloads
+  - ASDF_DIR=~/.asdf
+  - . $ASDF_DIR/asdf.sh
+  - mix local.hex --force
+  - mix local.rebar --force
+  - mix deps.get
+  - mix deps.compile
 
 - name: store ASDF cache
   image: meltwater/drone-cache
@@ -302,3 +305,90 @@ steps:
   - git log -1 --format=%s > .last_commit_message
   - asdf mix git_ops.check_message .last_commit_message
 
+---
+kind: pipeline
+type: docker
+name: release
+
+triggers:
+  branch:
+  - main
+  - add-drone-ci-config
+
+depends_on:
+  - test
+
+steps:
+- name: restore ASDF cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    restore: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    cache_key: 'asdf-{{ checksum ".tool-versions" }}'
+    mount:
+    - .asdf
+
+- name: restore build cache
+  image: meltwater/drone-cache
+  pull: true
+  environment:
+    AWS_ACCESS_KEY_ID:
+      from_secret: ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      from_secret: SECRET_ACCESS_KEY
+    AWS_PLUGIN_PATH_STYLE: true
+  settings:
+    restore: true
+    endpoint:
+      from_secret: S3_ENDPOINT
+    bucket:
+      from_secret: CACHE_BUCKET
+    region: us-east-1
+    path-style: true
+    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    mount:
+    - deps
+    - _build
+    - .hex
+    - .mix
+
+- name: attempt git_ops release
+  image: code.harton.nz/james/asdf_container:latest
+  pull: true
+  depends_on:
+  - restore ASDF cache
+  - restore build cache
+  environment:
+    MIX_ENV: test
+    HEX_HOME: /drone/src/.hex
+    MIX_HOME: /drone/src/.mix
+    ASDF_DATA_DIR: /drone/src/.asdf
+  commands:
+  - |
+    export ASDF_DIR=~/.asdf
+    . $ASDF_DIR/asdf.sh
+    mix git_ops.project_info --format=shell > before.env
+    mix git_ops.release --yes --no-major || true
+    mix git_ops.project_info --format=shell > after.env
+    . ./before.env
+    export OLD_APP_VERSION=$APP_VERSION
+    . ./after.env
+    if [ "v${OLD_APP_VERSION}" != "v${APP_VERSION}" ]; then
+      mix esbuild prod
+      mix hex.build -o "artifacts/${APP_NAME}-${APP_VERSION}.tar"
+      gzip "artifacts/${APP_NAME}-${APP_VERSION}.tar"
+      mix docs && tar zcvf "artifacts/${APP_NAME}-${APP_VERSION}-docs.tar.gz" doc/
+      git push $DRONE_GIT_HTTP_URL "HEAD:${DRONE_COMMIT_REF}" "refs/tags/v${APP_VERSION}"
+    fi

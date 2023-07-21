@@ -1,6 +1,6 @@
 # Cinder
 
-[![pipeline status](https://code.harton.nz/james/cinder/badges/main/pipeline.svg)](https://code.harton.nz/james/cinder/commits/main)
+[![Build Status](https://drone.harton.nz/api/badges/james/cinder/status.svg?ref=refs/heads/main)](https://drone.harton.nz/james/cinder)
 [![Hippocratic License HL3-FULL](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-FULL&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/full.html)
 
 Cinder is a framework for building real-time web applications in Elixir with a

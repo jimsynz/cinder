@@ -47,6 +47,7 @@ steps:
     - _build
     - .hex
     - .mix
+    - .rebar3
 
 - name: install dependencies
   image: code.harton.nz/james/asdf_container:latest
@@ -55,6 +56,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
     ASDF_DIR: /root/.asdf
   depends_on:
@@ -119,6 +121,7 @@ steps:
     - _build
     - .hex
     - .mix
+    - .rebar3
 
 ---
 
@@ -174,6 +177,7 @@ steps:
     - _build
     - .hex
     - .mix
+    - .rebar3
 
 - name: mix compile
   image: code.harton.nz/james/asdf_container:latest
@@ -182,6 +186,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - restore ASDF cache
@@ -196,6 +201,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -209,6 +215,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -222,6 +229,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -235,6 +243,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -248,6 +257,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -261,6 +271,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -274,6 +285,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -287,6 +299,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -300,6 +313,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
   depends_on:
   - mix compile
@@ -366,6 +380,7 @@ steps:
     - _build
     - .hex
     - .mix
+    - .rebar3
 
 - name: mix git_ops.release
   image: code.harton.nz/james/asdf_container:latest
@@ -377,6 +392,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
     ASDF_DIR: /root/.asdf
     DRONE_TOKEN:
@@ -455,6 +471,7 @@ steps:
     - _build
     - .hex
     - .mix
+    - .rebar3
 
 - name: build artifacts
   image: code.harton.nz/james/asdf_container:latest
@@ -466,6 +483,7 @@ steps:
     MIX_ENV: test
     HEX_HOME: /drone/src/.hex
     MIX_HOME: /drone/src/.mix
+    REBAR_BASE_DIR: /drone/src/.rebar3
     ASDF_DATA_DIR: /drone/src/.asdf
     ASDF_DIR: /root/.asdf
   commands:
@@ -504,6 +522,7 @@ steps:
 #     MIX_ENV: test
 #     HEX_HOME: /drone/src/.hex
 #     MIX_HOME: /drone/src/.mix
+#     REBAR_BASE_DIR: /drone/src/.rebar3
 #     ASDF_DATA_DIR: /drone/src/.asdf
 #     ASDF_DIR: /root/.asdf
 #     HEX_API_KEY:

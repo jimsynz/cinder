@@ -41,7 +41,7 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
-    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    cache_key: 'elixir-{{ checksum "mix.lock" }}-{{ checksum ".tool-versions" }}'
     mount:
     - deps
     - _build
@@ -115,7 +115,7 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
-    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    cache_key: 'elixir-{{ checksum "mix.lock" }}-{{ checksum ".tool-versions" }}'
     mount:
     - deps
     - _build
@@ -171,7 +171,7 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
-    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    cache_key: 'elixir-{{ checksum "mix.lock" }}-{{ checksum ".tool-versions" }}'
     mount:
     - deps
     - _build
@@ -374,7 +374,7 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
-    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    cache_key: 'elixir-{{ checksum "mix.lock" }}-{{ checksum ".tool-versions" }}'
     mount:
     - deps
     - _build
@@ -465,7 +465,7 @@ steps:
       from_secret: CACHE_BUCKET
     region: us-east-1
     path-style: true
-    cache_key: 'elixir-{{ checksum "mix.lock" }}'
+    cache_key: 'elixir-{{ checksum "mix.lock" }}-{{ checksum ".tool-versions" }}'
     mount:
     - deps
     - _build

@@ -315,6 +315,8 @@ name: git ops
 trigger:
   branch:
   - main
+  event:
+  - push
 
 depends_on:
   - test

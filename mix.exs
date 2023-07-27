@@ -30,7 +30,7 @@ defmodule Cinder.MixProject do
       maintainers: ["James Harton <james@harton.nz>"],
       licenses: ["HL3-FULL"],
       links: %{
-        "Source" => "https://code.harton.nz/james/cinder"
+        "Source" => "https://code.harton.nz/cinder/cinder"
       }
     ]
   end

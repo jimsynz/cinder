@@ -59,7 +59,7 @@ defmodule Cinder.MixProject do
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
       {:tailwind, "~> 0.2.0", only: :dev},
       {:mix_audit, "~> 2.1", only: ~w[dev test]a, runtime: false},
-      {:sobelow, "~> 0.12", only: ~w[dev test]a, runtime: false},
+      {:sobelow, "~> 0.13", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,
        git: "https://code.harton.nz/james/neotoma_compiler.git",
        branch: :main,

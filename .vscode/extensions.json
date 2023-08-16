@@ -4,6 +4,7 @@
     "andrejunges.handlebars",
     "jakebecker.elixir-ls",
     "iampeterbanjo.elixirlinter",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "ms-toolsai.jupyter"
   ]
 }

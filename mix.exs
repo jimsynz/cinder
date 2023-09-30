@@ -21,6 +21,55 @@ defmodule Cinder.MixProject do
       dialyzer: [
         plt_add_apps: [:mix, :ex_unit],
         list_unused_filters: true
+      ],
+      docs: [
+        main: "Cinder",
+        extra_section: "Guides",
+        formatters: ["html"],
+        filter_modules: ~r/^Elixir.Cinder/,
+        source_url_pattern:
+          "https://code.harton.nz/cinder/cinder/src/branch/main/%{path}#L%{line}",
+        spark: [
+          extensions: [
+            %{
+              module: Cinder.Dsl,
+              name: "Cinder.Dsl",
+              target: "Cinder",
+              type: "Cinder"
+            },
+            %{
+              module: Cinder.Component.Dsl,
+              name: "Cinder.Component.Dsl",
+              target: "Cinder.Component",
+              type: "Cinder.Component"
+            }
+          ]
+        ],
+        extras:
+          ["README.md"]
+          |> Enum.concat(Path.wildcard("documentation/**/*.{md,livemd,cheatmd}"))
+          |> Enum.map(fn
+            "README.md" -> {:"README.md", title: "Read Me", ash_hq?: false}
+            "documentation/" <> _ = path -> {String.to_atom(path), []}
+          end),
+        groups_for_extras:
+          "documentation/*"
+          |> Path.wildcard()
+          |> Enum.map(fn dir ->
+            name =
+              dir
+              |> Path.split()
+              |> List.last()
+              |> String.split(~r/_+/)
+              |> Enum.map_join(" ", &String.capitalize/1)
+
+            files =
+              dir
+              |> Path.join("**.{md,livemd,cheatmd}")
+              |> Path.wildcard()
+
+            {name, files}
+          end)
       ]
     ]
   end
@@ -70,7 +119,8 @@ defmodule Cinder.MixProject do
 
   defp aliases,
     do: [
-      "spark.formatter": "spark.formatter --extensions=Cinder.Dsl,Cinder.Component.Dsl"
+      "spark.formatter": "spark.formatter --extensions=Cinder.Dsl,Cinder.Component.Dsl",
+      "spark.cheat_sheets": "spark.cheat_sheets --extensions=Cinder.Dsl,Cinder.Component.Dsl"
     ]
 
   defp compilers(env) when env in ~w[dev test]a, do: [:neotoma | Mix.compilers()]

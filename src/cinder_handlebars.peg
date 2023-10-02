@@ -152,7 +152,7 @@ path <- head:(identifier / at_identifier) tail:(('.' / '/') path_element)+
     {path, [Head | Tail]}
   `;
 
-path_element <- identifier / literal_segment;
+path_element <- identifier / literal_segment / string;
 literal_segment <- '[' space? literal space? ']' `lists:nth(3, Node)`;
 
 literal <- boolean_true / boolean_false / float / integer / string;

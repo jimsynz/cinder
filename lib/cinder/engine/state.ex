@@ -38,12 +38,18 @@ defmodule Cinder.Engine.State do
   """
   @spec to_request(t) :: Request.t()
   def to_request(state) when is_struct(state, State) do
+    current_route = List.last(state.current_routes)
+
+    current_params =
+      state.query_params
+      |> Map.merge(Map.get(current_route, :params) || %{})
+
     %Request{
       app: state.app,
       request_id: state.request_id,
       current_routes: state.current_routes,
-      current_route: state.current_routes |> List.last(),
-      current_params: state.query_params,
+      current_route: current_route,
+      current_params: current_params,
       pid: self()
     }
   end

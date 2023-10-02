@@ -19,7 +19,7 @@ defmodule Cinder.MixProject do
       compilers: compilers(Mix.env()),
       preferred_cli_env: [ci: :test],
       dialyzer: [
-        plt_add_apps: [:mix, :ex_unit],
+        plt_add_apps: [:mix, :ex_unit, :iex],
         list_unused_filters: true
       ],
       docs: [

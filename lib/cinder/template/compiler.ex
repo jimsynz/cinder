@@ -35,6 +35,8 @@ defmodule Cinder.Template.Compiler do
   def compile(template, env, file \\ "nofile", line \\ 1, column \\ 1) do
     module = env.module
 
+    env = %{env | file: file, line: line}
+
     args =
       env
       |> Macro.Env.vars()

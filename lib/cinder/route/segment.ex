@@ -16,4 +16,10 @@ defprotocol Cinder.Route.Segment do
   """
   @spec render(t, %{required(String.t()) => String.Chars.t()}) :: String.t() | no_return
   def render(segment, params)
+
+  @doc """
+  Return the segment for this syntax - ie the inverse of `match/2`.
+  """
+  @spec segment(t) :: String.t() | no_return
+  def segment(segment)
 end

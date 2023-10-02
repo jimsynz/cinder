@@ -22,6 +22,21 @@ defmodule Cinder.Template.Helpers.Route do
   end
 
   @doc """
+  Returns the "route identifier" for the current route.
+  """
+  @spec current_route_id(Request.t()) :: String.t()
+  def current_route_id(request) when is_struct(request, Request) do
+    request.current_routes
+    |> Enum.flat_map(fn route ->
+      {:ok, dsl_route} = Info.fetch_route_by_module(request.app, route.module)
+
+      dsl_route.segments
+      |> Stream.map(&Segment.segment/1)
+    end)
+    |> Path.join()
+  end
+
+  @doc """
   Convert a route string into a path.
   """
   @spec url_for(Request.t(), URI.t() | binary, keyword) :: URI.t()

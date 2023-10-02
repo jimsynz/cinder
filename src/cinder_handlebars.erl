@@ -258,7 +258,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'path_element'(input(), index()) -> parse_result().
 'path_element'(Input, Index) ->
-  p(Input, Index, 'path_element', fun(I,D) -> (p_choose([fun 'identifier'/2, fun 'literal_segment'/2]))(I,D) end, fun(Node, Idx) ->transform('path_element', Node, Idx) end).
+  p(Input, Index, 'path_element', fun(I,D) -> (p_choose([fun 'identifier'/2, fun 'literal_segment'/2, fun 'string'/2]))(I,D) end, fun(Node, Idx) ->transform('path_element', Node, Idx) end).
 
 -spec 'literal_segment'(input(), index()) -> parse_result().
 'literal_segment'(Input, Index) ->

@@ -30,5 +30,9 @@ defmodule Cinder.Route.StaticSegment do
     @spec render(StaticSegment.t(), %{required(String.t()) => String.Chars.t()}) ::
             String.t() | no_return
     def render(%StaticSegment{segment: segment}, _), do: segment
+
+    @doc false
+    @spec segment(StaticSegment.t()) :: String.t() | no_return
+    def segment(%StaticSegment{segment: segment}), do: segment
   end
 end

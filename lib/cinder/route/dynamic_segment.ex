@@ -34,5 +34,9 @@ defmodule Cinder.Route.DynamicSegment do
       |> Map.fetch!(segment.name)
       |> to_string()
     end
+
+    @doc false
+    @spec segment(DynamicSegment.t()) :: String.t() | no_return
+    def segment(%DynamicSegment{name: name}), do: ":#{name}"
   end
 end

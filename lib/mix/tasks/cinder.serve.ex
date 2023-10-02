@@ -14,6 +14,14 @@ defmodule Mix.Tasks.Cinder.Serve do
   @impl true
   def run(args) do
     Application.put_env(:cinder, :start_server, true, persistent: true)
+
+    args =
+      if Code.ensure_loaded?(IEx) && IEx.started?() do
+        args
+      else
+        args ++ ["--no-halt"]
+      end
+
     Run.run(args)
   end
 end

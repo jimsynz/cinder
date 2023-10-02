@@ -37,13 +37,13 @@ defmodule Cinder.Components.Link do
   @spec render :: Cinder.Template.Render.t()
   def render do
     ~B"""
-    <a href={{@to}} class={{@class}} aria-current={{aria_current @request  @to}}>{{yield}}</a>
+    <a href={{@to}} class={{@class}} aria-current={{aria_current @request @to}}>{{yield}}</a>
     """
   end
 
   defp aria_current(request, to) do
-    current_route = current_route(request)
-    url = url_for(request, current_route, Enum.to_list(request.current_params))
+    current_route_id = current_route_id(request)
+    url = url_for(request, current_route_id, Enum.to_list(request.current_params))
 
     if to_string(url) == to_string(to) do
       "page"

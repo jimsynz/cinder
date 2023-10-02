@@ -5,6 +5,29 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.9.1](https://code.harton.nz/cinder/cinder/compare/v0.9.0...v0.9.1) (2023-10-02)
+
+
+
+
+### Features:
+
+* TypeScript client-side components.
+
+### Bug Fixes:
+
+* bugs in route helpers.
+
+* cookie signing salt cannot be retrieved at compile time.
+
+### Improvements:
+
+* Make the `cookie_signing_salt` a secret.
+
+* Enable components to add extra properties to their root elements.
+
+* ensure that components only have one element at the root.
+
 ## [v0.9.0](https://gitlab.com/jimsy/cinder/compare/v0.8.4...v0.9.0) (2023-03-16)
 
 

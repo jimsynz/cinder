@@ -46,13 +46,13 @@ to try it you should install it directly from the repository:
 ```elixir
 def deps do
   [
-    {:cinder, git: "https://code.harton.nz/cinder/cinder", tag: "v0.8"}
+    {:cinder, git: "https://code.harton.nz/cinder/cinder", tag: "v0.9"}
   ]
 end
 ```
 
 Documentation is not yet published to Hexdocs, so you can access the latest
-version [on Gitlab pages](https://jimsy.gitlab.io/cinder/).
+version [on my docs site](https://docs.harton.nz/cinder/cinder/Cinder.html).
 
 ## License
 

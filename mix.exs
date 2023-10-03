@@ -23,7 +23,7 @@ defmodule Cinder.MixProject do
         list_unused_filters: true
       ],
       docs: [
-        main: "Cinder",
+        main: "readme",
         extra_section: "Guides",
         formatters: ["html"],
         filter_modules: ~r/^Elixir.Cinder/,

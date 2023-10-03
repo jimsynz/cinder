@@ -5,6 +5,19 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.9.2](https://code.harton.nz/cinder/cinder/compare/v0.9.1...v0.9.2) (2023-10-03)
+
+
+
+
+### Bug Fixes:
+
+* bugs in route helpers.
+
+### Improvements:
+
+* Add ability to specify http bind address in the DSL.
+
 ## [v0.9.1](https://code.harton.nz/cinder/cinder/compare/v0.9.0...v0.9.1) (2023-10-02)
 
 

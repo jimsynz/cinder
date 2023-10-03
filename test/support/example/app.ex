@@ -29,5 +29,6 @@ defmodule Example.App do
 
     secret_key_base &Application.fetch_env(:cinder, &1)
     cookie_signing_salt "jfJAB1yNo/0ATHaAjggU1Q"
+    bind_address "::"
   end
 end

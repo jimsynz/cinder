@@ -8,6 +8,7 @@ defmodule Cinder.Engine do
     Engine,
     Engine.Macros,
     Engine.Server,
+    Helpers,
     Route,
     UniqueId
   }
@@ -132,28 +133,40 @@ defmodule Cinder.Engine do
     if start_server?(app) do
       plug = Extension.get_persisted(app, :cinder_plug)
       port = Extension.get_opt(app, [:cinder], :listen_port, 4000)
+      listen_addresses = Extension.get_opt(app, [:cinder], :bind_address)
 
       Logger.info(fn ->
         cowboy_vsn = Application.spec(:cowboy, :vsn)
 
-        "Starting `#{inspect(app)}` with cowboy #{cowboy_vsn} at http://127.0.0.1:#{port}/ (http)"
+        endpoints =
+          listen_addresses
+          |> addresses_to_urls(port)
+          |> Helpers.to_sentence(last: " and ")
+
+        "Starting `#{inspect(app)}` with cowboy #{cowboy_vsn} at #{endpoints} (http)"
       end)
 
-      Enum.concat(children, [
-        {Plug.Cowboy,
-         scheme: :http,
-         plug: plug,
-         options: [
-           port: port,
-           dispatch: [
-             {:_,
-              [
-                {"/ws", Cinder.WebsocketHandler, [app: app]},
-                {:_, Plug.Cowboy.Handler, {plug, [app: app]}}
-              ]}
-           ]
-         ]}
-      ])
+      listeners =
+        listen_addresses
+        |> Enum.map(fn address ->
+          {Plug.Cowboy,
+           scheme: :http,
+           plug: plug,
+           options: [
+             port: port,
+             ip: IP.Address.to_tuple(address),
+             ref: {Cinder.Plug, to_string(address)},
+             dispatch: [
+               {:_,
+                [
+                  {"/ws", Cinder.WebsocketHandler, [app: app]},
+                  {:_, Plug.Cowboy.Handler, {plug, [app: app]}}
+                ]}
+             ]
+           ]}
+        end)
+
+      Enum.concat(children, listeners)
     else
       children
     end
@@ -164,5 +177,13 @@ defmodule Cinder.Engine do
 
     Application.get_env(otp_app, :start_server, false) ||
       Application.get_env(:cinder, :start_server, false)
+  end
+
+  defp addresses_to_urls(addresses, port) do
+    addresses
+    |> Enum.map(fn address ->
+      %URI{scheme: "http", host: to_string(address), path: "/", port: port}
+      |> to_string()
+    end)
   end
 end

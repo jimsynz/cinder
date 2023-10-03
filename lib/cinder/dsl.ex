@@ -128,6 +128,11 @@ defmodule Cinder.Dsl do
           type: :pos_integer,
           doc: "HTTP listen port",
           default: 4000
+        ],
+        bind_address: [
+          type: {:wrap_list, :string},
+          doc: "HTTP listen address",
+          default: ["::1", "127.0.0.1"]
         ]
       ]
     }

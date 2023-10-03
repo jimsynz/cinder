@@ -1,6 +1,7 @@
 spark_locals_without_parens = [
   allow_nil?: 1,
   base_path: 1,
+  bind_address: 1,
   cookie_signing_salt: 1,
   data?: 1,
   default: 1,

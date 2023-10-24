@@ -52,7 +52,7 @@ end
 ```
 
 Documentation is not yet published to Hexdocs, so you can access the latest
-version [on my docs site](https://docs.harton.nz/cinder/cinder/Cinder.html).
+version [on my docs site](https://docs.harton.nz/cinder/cinder/readme.html).
 
 ## License
 

@@ -4,15 +4,8 @@ defmodule Cinder do
   @moduledoc """
   The Cinder web application server.
 
-  ## DSL Documentation
-
-  ### Index
-
-  #{Spark.Dsl.Extension.doc_index(Dsl.dsl())}
-
-  ### Docs
-
-  #{Spark.Dsl.Extension.doc(Dsl.dsl())}
+  The Cinder module defines the core of your web application server.  It is used
+  to define routing, template, asset and engine configuration.
   """
 
   use Spark.Dsl, default_extensions: [extensions: [Dsl]]

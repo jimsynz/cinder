@@ -114,7 +114,7 @@ defmodule Cinder.MixProject do
       {:sobelow, "~> 0.13", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,
        git: "https://code.harton.nz/james/neotoma_compiler.git",
-       branch: :main,
+       branch: "main",
        only: ~w[dev test]a,
        runtime: false}
     ]

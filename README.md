@@ -46,7 +46,7 @@ to try it you should install it directly from the repository:
 ```elixir
 def deps do
   [
-    {:cinder, git: "https://code.harton.nz/cinder/cinder", tag: "v0.9"}
+    {:cinder, git: "https://harton.dev/cinder/cinder", tag: "v0.9"}
   ]
 end
 ```

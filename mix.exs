@@ -27,8 +27,7 @@ defmodule Cinder.MixProject do
         extra_section: "Guides",
         formatters: ["html"],
         filter_modules: ~r/^Elixir.Cinder/,
-        source_url_pattern:
-          "https://code.harton.nz/cinder/cinder/src/branch/main/%{path}#L%{line}",
+        source_url_pattern: "https://harton.dev/cinder/cinder/src/branch/main/%{path}#L%{line}",
         spark: [
           extensions: [
             %{
@@ -79,7 +78,7 @@ defmodule Cinder.MixProject do
       maintainers: ["James Harton <james@harton.nz>"],
       licenses: ["HL3-FULL"],
       links: %{
-        "Source" => "https://code.harton.nz/cinder/cinder"
+        "Source" => "https://harton.dev/cinder/cinder"
       }
     ]
   end
@@ -113,7 +112,7 @@ defmodule Cinder.MixProject do
       {:mix_audit, "~> 2.1", only: ~w[dev test]a, runtime: false},
       {:sobelow, "~> 0.13", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,
-       git: "https://code.harton.nz/james/neotoma_compiler.git",
+       git: "https://harton.dev/james/neotoma_compiler.git",
        branch: "main",
        only: ~w[dev test]a,
        runtime: false}

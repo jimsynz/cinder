@@ -105,7 +105,7 @@ defmodule Cinder.MixProject do
       {:doctor, github: "akoutmos/doctor", only: ~w[dev test]a, runtime: false},
       {:dialyxir, "~> 1.2", only: ~w[dev test]a, runtime: false},
       {:esbuild, "~> 0.8.0", only: ~w[dev test]a},
-      {:ex_check, "~> 0.15", only: ~w[dev test]a, runtime: false},
+      {:ex_check, "~> 0.16", only: ~w[dev test]a, runtime: false},
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
       {:tailwind, "~> 0.2.0", only: :dev},

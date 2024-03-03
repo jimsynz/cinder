@@ -1,10 +1,10 @@
 defmodule Cinder.Component.PropType do
   @moduledoc """
-  Extensions to `NimbleOptions` and `Spark.OptionsHelpers` for validating properties.
+  Extensions to `Spark.Options` for validating properties.
   """
 
   alias __MODULE__
-  alias Spark.OptionsHelpers
+  alias Spark.Options
 
   @typedoc """
   Currently validates the property as a string, but this should probably be
@@ -28,9 +28,9 @@ defmodule Cinder.Component.PropType do
   """
   @type option(inner) :: {:option, inner}
 
-  @type type :: css_class | uri | protocol | option(any) | OptionsHelpers.type()
+  @type type :: css_class | uri | protocol | option(any) | Options.type()
 
-  @doc "Convert a schema to one which can be used by `Spark.OptionsHelpers`"
+  @doc "Convert a schema to one which can be used by `Spark.Options`"
   @spec sanitise_schema(keyword) :: keyword()
   def sanitise_schema(schema) do
     schema
@@ -39,8 +39,8 @@ defmodule Cinder.Component.PropType do
     end)
   end
 
-  @doc "Convert a type to one which can be used by `Spark.OptionsHelpers`"
-  @spec sanitise_type(type) :: OptionsHelpers.nimble_types()
+  @doc "Convert a type to one which can be used by `Spark.Options`"
+  @spec sanitise_type(type) :: Options.type()
   def sanitise_type(:css_class), do: {:custom, PropType.CssClass, :validate, []}
   def sanitise_type(:uri), do: {:custom, PropType.Uri, :validate, []}
 

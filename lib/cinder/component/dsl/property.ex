@@ -7,7 +7,7 @@ defmodule Cinder.Component.Dsl.Property do
 
   @type t :: %__MODULE__{
           name: atom,
-          type: Spark.OptionsHelpers.type(),
+          type: Spark.Options.type(),
           required?: boolean,
           allow_nil?: boolean,
           data?: boolean,

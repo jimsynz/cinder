@@ -10,7 +10,7 @@ defmodule Cinder.Component do
   }
 
   alias NimbleOptions.ValidationError
-  alias Spark.{Dsl.Extension, OptionsHelpers}
+  alias Spark.{CheatSheet, Dsl.Extension, OptionsHelpers}
 
   @moduledoc """
   A Cinder component.
@@ -19,11 +19,11 @@ defmodule Cinder.Component do
 
   ### Index
 
-  #{Extension.doc_index(Dsl.dsl())}
+  #{CheatSheet.doc_index(Dsl.dsl())}
 
   ### Docs
 
-  #{Extension.doc(Dsl.dsl())}
+  #{CheatSheet.doc(Dsl.dsl())}
   """
 
   use Spark.Dsl, default_extensions: [extensions: Dsl]

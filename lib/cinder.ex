@@ -8,11 +8,11 @@ defmodule Cinder do
 
   ### Index
 
-  #{Spark.Dsl.Extension.doc_index(Dsl.dsl())}
+  #{Spark.CheatSheet.doc_index(Dsl.dsl())}
 
   ### Docs
 
-  #{Spark.Dsl.Extension.doc(Dsl.dsl())}
+  #{Spark.CheatSheet.doc(Dsl.dsl())}
   """
 
   use Spark.Dsl, default_extensions: [extensions: [Dsl]]

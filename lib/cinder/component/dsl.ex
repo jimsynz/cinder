@@ -65,6 +65,10 @@ defmodule Cinder.Component.Dsl do
           required?: [
             type: :boolean,
             default: true
+          ],
+          trim?: [
+            type: :boolean,
+            default: false
           ]
         ]
       },

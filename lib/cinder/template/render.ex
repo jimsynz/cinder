@@ -3,7 +3,7 @@ defprotocol Cinder.Template.Render do
   A protocol for rendering compiled templates.
   """
 
-  alias Cinder.Template.{Assigns, SlotStack}
+  alias Cinder.Template.{Assigns, Iodata, SlotStack}
 
   @type render_list :: iolist | [atom | {atom, render_list}]
 
@@ -19,7 +19,7 @@ defprotocol Cinder.Template.Render do
   Execute a template (ie render it) including any dynamic content with the data
   provided.
   """
-  @spec execute(t, Assigns.t(), SlotStack.t(), Assigns.t()) :: iodata
+  @spec execute(t, Assigns.t(), SlotStack.t(), Assigns.t()) :: Iodata.t()
   def execute(compiled, assigns, slots, locals)
 end
 

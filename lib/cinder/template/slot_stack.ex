@@ -49,7 +49,7 @@ defmodule Cinder.Template.SlotStack do
     do: Map.fetch(head, name)
 
   @doc """
-  Fetch the first occurance of a slot from the stack.
+  Fetch the first occurrence of a slot from the stack.
   """
   @spec fetch(t, atom) :: {:ok, Render.t()} | :error
   def fetch(%SlotStack{stack: stack}, name) when is_atom(name) do
@@ -62,7 +62,7 @@ defmodule Cinder.Template.SlotStack do
   end
 
   @doc """
-  Get the first occurance of a slot from the stack.
+  Get the first occurrence of a slot from the stack.
   """
   @spec get(t, atom) :: Render.t() | nil
   def get(slot_stack, name, default \\ nil)

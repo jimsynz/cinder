@@ -23,7 +23,8 @@ spark_locals_without_parens = [
   slot: 1,
   slot: 2,
   source_path: 1,
-  target_path: 1
+  target_path: 1,
+  trim?: 1
 ]
 
 [

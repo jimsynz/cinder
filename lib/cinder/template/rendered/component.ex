@@ -6,6 +6,7 @@ defmodule Cinder.Template.Rendered.Component do
   defstruct attributes: [], name: [], optimised?: false, slots: %{}
 
   alias Cinder.{
+    Component.Dsl.Info,
     Template.Assigns,
     Template.Compilable,
     Template.Render,
@@ -13,6 +14,7 @@ defmodule Cinder.Template.Rendered.Component do
     Template.Rendered.Attribute,
     Template.Rendered.Component,
     Template.Rendered.Static,
+    Template.Rendered.TrimCompose,
     Template.SlotStack
   }
 
@@ -114,21 +116,24 @@ defmodule Cinder.Template.Rendered.Component do
 
       assigns =
         component.attributes
-        |> Stream.map(&{&1.name, &1.value})
         |> Enum.reduce(assigns, fn
-          {name, value}, assigns when is_binary(value) ->
+          %{name: name, value: value}, assigns when is_binary(value) ->
             Assigns.push(assigns, name, value)
 
-          {name, value}, assigns when is_function(value, 3) ->
+          %{name: name, value: value}, assigns when is_function(value, 3) ->
             Assigns.push(assigns, name, value.(parent_assigns, slots, locals))
         end)
 
       slots =
         component.slots
-        |> Enum.map(fn {name, slot} ->
+        |> Map.new(fn {name, slot} ->
+          slot =
+            if Info.trim_slot?(component.name, name),
+              do: TrimCompose.init(slot),
+              else: slot
+
           {name, AssignCompose.init(slot, parent_assigns)}
         end)
-        |> Map.new()
         |> then(&SlotStack.push(slots, &1))
 
       with :ok <- Cinder.Component.validate_props(component.name, assigns),

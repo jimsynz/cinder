@@ -18,6 +18,7 @@ defmodule Cinder.MixProject do
       aliases: aliases(),
       compilers: compilers(Mix.env()),
       preferred_cli_env: [ci: :test],
+      consolidate_protocols: Mix.env() not in [:dev, :test],
       dialyzer: [
         plt_add_apps: [:mix, :ex_unit, :iex],
         list_unused_filters: true

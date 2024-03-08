@@ -4,8 +4,6 @@ defmodule Cinder.Engine.Server do
   """
   use GenServer, restart: :transient
 
-  alias Cinder.Template.SlotStack
-
   alias Cinder.{
     Engine,
     Engine.Macros,
@@ -19,7 +17,8 @@ defmodule Cinder.Engine.Server do
     Template.Render,
     Template.Rendered.AssignCompose,
     Template.Rendered.SlotCompose,
-    Template.Rendered.Static
+    Template.Rendered.Static,
+    Template.SlotStack
   }
 
   alias Plug.Conn

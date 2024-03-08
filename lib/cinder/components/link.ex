@@ -21,6 +21,7 @@ defmodule Cinder.Components.Link do
 
     slot :default do
       required? true
+      trim? true
     end
 
     event :click, ~t"""

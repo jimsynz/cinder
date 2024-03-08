@@ -45,12 +45,10 @@ defmodule Cinder.MixProject do
           ]
         ],
         extras:
-          ["README.md"]
-          |> Enum.concat(Path.wildcard("documentation/**/*.{md,livemd,cheatmd}"))
-          |> Enum.map(fn
-            "README.md" -> {:"README.md", title: "Read Me", ash_hq?: false}
-            "documentation/" <> _ = path -> {String.to_atom(path), []}
-          end),
+          Enum.concat(
+            ["README.md", "CHANGELOG.md"],
+            Path.wildcard("documentation/**/*.{md,livemd,cheatmd}")
+          ),
         groups_for_extras:
           "documentation/*"
           |> Path.wildcard()
@@ -78,7 +76,10 @@ defmodule Cinder.MixProject do
       maintainers: ["James Harton <james@harton.nz>"],
       licenses: ["HL3-FULL"],
       links: %{
-        "Source" => "https://harton.dev/cinder/cinder"
+        "Source" => "https://harton.dev/cinder/cinder",
+        "GitHub" => "https://github.com/jimsynz/cinder",
+        "Changelog" => "https://docs.harton.nz/james/cinder/changelog.html",
+        "Sponsor" => "https://github.com/sponsors/jimsynz"
       }
     ]
   end

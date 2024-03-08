@@ -1,6 +1,6 @@
 # Cinder
 
-[![Build Status](https://drone.harton.nz/api/badges/cinder/cinder/status.svg?ref=refs/heads/main)](https://drone.harton.nz/cinder/cinder)
+[![Build Status](https://drone.harton.dev/api/badges/cinder/cinder/status.svg?ref=refs/heads/main)](https://drone.harton.dev/cinder/cinder)
 [![Hippocratic License HL3-FULL](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-FULL&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/full.html)
 
 Cinder is a framework for building real-time web applications in Elixir with a
@@ -53,6 +53,12 @@ end
 
 Documentation is not yet published to Hexdocs, so you can access the latest
 version [on my docs site](https://docs.harton.nz/cinder/cinder/Cinder.html).
+
+## Github Mirror
+
+This repository is mirrored [on Github](https://github.com/jimsynz/cinder)
+from it's primary location [on my Forgejo instance](https://harton.dev/cinder/cinder).
+Feel free to raise issues and open PRs on Github.
 
 ## License
 

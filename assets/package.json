@@ -1,8 +1,4 @@
 {
-  "devDependencies": {
-    "@msgpack/msgpack": "^2.8.0",
-    "morphdom": "^2.7.0"
-  },
   "scripts": {
     "test": "exit 0"
   }

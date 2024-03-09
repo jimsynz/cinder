@@ -1,5 +1,6 @@
 spark_locals_without_parens = [
   allow_nil?: 1,
+  auto_define_modules?: 1,
   base_path: 1,
   bind_address: 1,
   cookie_signing_salt: 1,

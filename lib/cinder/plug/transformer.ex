@@ -41,16 +41,6 @@ defmodule Cinder.Plug.Transformer do
         |> String.to_atom()
       )
       |> Transformer.persist(:cinder_plug, plug)
-      |> Transformer.eval(
-        [app: app, plug: plug],
-        quote location: :keep do
-          unless Code.ensure_loaded?(unquote(plug)) || Module.open?(unquote(plug)) do
-            defmodule unquote(plug) do
-              use Cinder.Plug, app: unquote(app)
-            end
-          end
-        end
-      )
 
     {:ok, dsl_state}
   end

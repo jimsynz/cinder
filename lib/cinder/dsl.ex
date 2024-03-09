@@ -13,6 +13,7 @@ defmodule Cinder.Dsl do
     args: [:name, :path],
     target: Dsl.Route,
     recursive_as: :children,
+    modules: [:name],
     schema: [
       name: [
         type: {:behaviour, Route},
@@ -26,11 +27,7 @@ defmodule Cinder.Dsl do
         type: :atom,
         required: false,
         default: nil,
-        doc: """
-        A shorthand name for the route.
-
-        Defaults to the module name underscored.
-        """
+        doc: "A shorthand name for the route. Defaults to the module name underscored."
       ]
     ],
     entities: [children: []]
@@ -40,6 +37,7 @@ defmodule Cinder.Dsl do
     name: :plug,
     args: [:name, {:optional, :options, []}],
     target: Dsl.Plug,
+    modules: [:name],
     schema: [
       name: [
         type: {:or, [{:behaviour, Plug}, :atom]},
@@ -133,6 +131,12 @@ defmodule Cinder.Dsl do
           type: {:wrap_list, :string},
           doc: "HTTP listen address",
           default: ["::1", "127.0.0.1"]
+        ],
+        auto_define_modules?: [
+          type: :boolean,
+          required: false,
+          default: true,
+          doc: "Automatically define missing app modules"
         ]
       ]
     }
@@ -140,7 +144,8 @@ defmodule Cinder.Dsl do
 
   use Spark.Dsl.Extension,
     sections: @dsl,
-    transformers: [Engine.Transformer, Plug.Transformer, Route.Transformer]
+    transformers: [Engine.Transformer, Plug.Transformer, Route.Transformer],
+    verifiers: [Engine.Verifier, Plug.Verifier, Route.Verifier]
 
   @doc false
   @spec dsl :: [Section.t()]

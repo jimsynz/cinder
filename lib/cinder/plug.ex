@@ -6,9 +6,15 @@ defmodule Cinder.Plug do
   alias Cinder.{Dsl.Info, Secret}
   alias Spark.Dsl.Extension
 
+  @callback __cinder_is__ :: Cinder.Plug
+
   @spec __using__(keyword) :: Macro.t()
   defmacro __using__(opts) do
-    app = Keyword.fetch!(opts, :app)
+    app =
+      opts
+      |> Keyword.fetch!(:app)
+      |> Macro.expand(__CALLER__)
+
     static_dir = Info.cinder_assets_target_path!(app)
 
     default_plugs = [
@@ -44,6 +50,7 @@ defmodule Cinder.Plug do
     quote location: :keep do
       use Plug.Builder
       import Plug.Conn
+      @behaviour unquote(__MODULE__)
 
       for {name, options} <- unquote(Macro.escape(plugs)) do
         plug(name, options)

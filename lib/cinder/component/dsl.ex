@@ -11,7 +11,11 @@ defmodule Cinder.Component.Dsl do
     Script
   }
 
-  alias Spark.Dsl.{Entity, Extension, Section}
+  alias Spark.Dsl.{
+    Entity,
+    Extension,
+    Section
+  }
 
   @component %Section{
     name: :component,
@@ -29,7 +33,7 @@ defmodule Cinder.Component.Dsl do
           ],
           type: [
             type: :any,
-            doc: "A type as per NimbleOptions",
+            doc: "A type as per `Spark.Options`",
             required: true
           ],
           required?: [

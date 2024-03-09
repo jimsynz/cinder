@@ -1,5 +1,7 @@
 defmodule Cinder.Dsl.Route do
-  @moduledoc false
+  @moduledoc """
+  The Route DSL entity
+  """
   defstruct name: nil, path: "/", children: [], short_name: nil, segments: []
 
   alias Cinder.Route.Segment

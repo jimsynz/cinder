@@ -111,7 +111,6 @@ defmodule Cinder.MixProject do
       {:ex_doc, ">= 0.28.0", only: ~w[dev test]a, runtime: false},
       {:git_ops, "~> 2.5", only: ~w[dev test]a, runtime: false},
       {:tailwind, "~> 0.2.0", only: :dev},
-      {:mix_audit, "~> 2.1", only: ~w[dev test]a, runtime: false},
       {:sobelow, "~> 0.13", only: ~w[dev test]a, runtime: false},
       {:neotoma_compiler,
        git: "https://harton.dev/james/neotoma_compiler.git",

@@ -9,8 +9,7 @@ defmodule Cinder.Component do
     Template.SlotStack
   }
 
-  alias NimbleOptions.ValidationError
-  alias Spark.{CheatSheet, Dsl.Extension, OptionsHelpers}
+  alias Spark.{CheatSheet, Dsl.Extension, Options, Options.ValidationError}
 
   @moduledoc """
   A Cinder component.
@@ -39,7 +38,7 @@ defmodule Cinder.Component do
       |> Extension.get_persisted(:property_schema, [])
 
     with expected <- get_expected_assigns(assigns, schema),
-         {:ok, _} <- OptionsHelpers.validate(expected, schema),
+         {:ok, _} <- Options.validate(expected, schema),
          extra when map_size(extra) == 0 <- get_extra_assigns(assigns, schema) do
       :ok
     else
@@ -77,7 +76,7 @@ defmodule Cinder.Component do
       |> Extension.get_persisted(:slot_schema, [])
 
     with expected <- get_expected_slots(slots, schema),
-         {:ok, _} <- OptionsHelpers.validate(expected, schema),
+         {:ok, _} <- Options.validate(expected, schema),
          extra when map_size(extra) == 0 <- get_extra_slots(slots, schema) do
       :ok
     else

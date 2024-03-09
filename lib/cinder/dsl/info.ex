@@ -39,4 +39,28 @@ defmodule Cinder.Dsl.Info do
       :error -> :error
     end
   end
+
+  @doc "Get the app module"
+  @spec app_module(dsl_or_app) :: module
+  def app_module(dsl_or_app), do: Extension.get_persisted(dsl_or_app, :module)
+
+  @doc "Get the app plug module"
+  @spec app_plug_module(dsl_or_app) :: module
+  def app_plug_module(dsl_or_app), do: Extension.get_persisted(dsl_or_app, :cinder_plug)
+
+  @doc "Get the app engine module"
+  @spec app_engine_module(dsl_or_app) :: module
+  def app_engine_module(dsl_or_app), do: Extension.get_persisted(dsl_or_app, :cinder_engine)
+
+  @doc "Get the app layout module"
+  @spec app_layout_module(dsl_or_app) :: module
+  def app_layout_module(dsl_or_app), do: Extension.get_persisted(dsl_or_app, :cinder_layout)
+
+  @doc "Get all app route modules"
+  @spec app_route_modules(dsl_or_app) :: [module]
+  def app_route_modules(dsl_or_app) do
+    dsl_or_app
+    |> Extension.get_persisted(:cinder_route_map)
+    |> Map.keys()
+  end
 end

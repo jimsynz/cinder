@@ -9,11 +9,12 @@ defmodule Cinder.Route.Transformer do
   @doc false
   @impl true
   @spec after?(module) :: boolean
-  def after?(_), do: false
+  def after?(_), do: true
 
   @doc false
   @impl true
   @spec before?(module) :: boolean
+  # def before?(Cinder.Engine.Transformer), do: true
   def before?(_), do: false
 
   @doc false
@@ -50,20 +51,11 @@ defmodule Cinder.Route.Transformer do
         |> Transformer.persist(:cinder_assets_target_path, cinder_assets_target_path)
         |> Transformer.eval(
           [
-            cinder_route_modules: cinder_route_modules,
             cinder_routing_table: cinder_routing_table,
             app: app
           ],
           quote location: :keep do
             def __cinder_routing_table__, do: unquote(Macro.escape(cinder_routing_table))
-
-            for module <- unquote(cinder_route_modules) do
-              unless Code.ensure_loaded?(module) || Module.open?(module) do
-                defmodule module do
-                  use Cinder.Route, app: unquote(app)
-                end
-              end
-            end
           end
         )
 

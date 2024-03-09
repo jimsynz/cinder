@@ -37,20 +37,19 @@ defmodule Cinder.Engine.Transformer do
             def child_spec(opts) do
               %{
                 id: unquote(app),
-                start: {unquote(engine), :start_link, [[]]}
+                start: {__MODULE__, :start_link, [opts]}
               }
             end
 
-            unless Code.ensure_loaded?(unquote(engine)) || Module.open?(unquote(engine)) do
-              defmodule unquote(engine) do
-                use Cinder.Engine, app: unquote(app)
-              end
-            end
+            @compile {:no_warn_undefined, {unquote(engine), :start_link, 1}}
+            @dialyzer {:nowarn_function, [start_link: 1]}
 
-            unless Code.ensure_loaded?(unquote(layout)) || Module.open?(unquote(layout)) do
-              defmodule unquote(layout) do
-                use Cinder.Layout, app: unquote(app)
-              end
+            @doc false
+            @spec start_link(keyword) :: GenServer.on_start()
+            def start_link(opts) do
+              Cinder.Modules.maybe_define_missing_modules(unquote(app))
+
+              unquote(engine).start_link(opts)
             end
           end
         )

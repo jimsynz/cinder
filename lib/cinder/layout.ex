@@ -12,7 +12,10 @@ defmodule Cinder.Layout do
   @doc false
   @spec __using__(keyword) :: Macro.t()
   defmacro __using__(opts) do
-    app = Keyword.fetch!(opts, :app)
+    app =
+      opts
+      |> Keyword.fetch!(:app)
+      |> Macro.expand(__CALLER__)
 
     app_layout =
       app

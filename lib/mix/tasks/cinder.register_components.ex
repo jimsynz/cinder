@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Cinder.RegisterComponents do
         |> Stream.filter(&String.starts_with?(&1, "Elixir."))
         |> Stream.map(&String.trim_leading(&1, "Elixir."))
         |> Stream.map(&Module.concat([&1]))
-        |> Stream.filter(&is_component_with_script?/1)
+        |> Stream.filter(&component_with_script?/1)
         |> Enum.map(&write_component(asset_path, &1))
 
       write_linking_script(asset_path, script_files)
@@ -68,7 +68,7 @@ defmodule Mix.Tasks.Cinder.RegisterComponents do
     File.write!(path, script)
   end
 
-  defp is_component_with_script?(component) do
+  defp component_with_script?(component) do
     Code.ensure_loaded?(component) && function_exported?(component, :spark_is, 0) &&
       component.spark_is() == Cinder.Component && has_script?(component)
   end

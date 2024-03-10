@@ -5,6 +5,35 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.9.5](https://harton.dev/cinder/cinder/compare/v0.9.4...v0.9.5) (2024-03-10)
+
+
+
+
+### Features:
+
+* TypeScript client-side components.
+
+### Bug Fixes:
+
+* compiler deadlocks caused by Spark update.
+
+* bugs in route helpers.
+
+* cookie signing salt cannot be retrieved at compile time.
+
+### Improvements:
+
+* Support trimming of component slots.
+
+* Add ability to specify http bind address in the DSL.
+
+* Make the `cookie_signing_salt` a secret.
+
+* Enable components to add extra properties to their root elements.
+
+* ensure that components only have one element at the root.
+
 ## [v0.9.4](https://harton.dev/cinder/cinder/compare/v0.9.3...v0.9.4) (2024-03-08)
 
 

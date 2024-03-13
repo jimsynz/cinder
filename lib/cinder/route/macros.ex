@@ -71,7 +71,7 @@ defmodule Cinder.Route.Macros do
       end
 
       def template(_) do
-        ~B"{{yield}}"
+        ~HB"{{yield}}"
       end
     end
   end

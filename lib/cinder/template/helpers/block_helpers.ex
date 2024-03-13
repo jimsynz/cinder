@@ -16,18 +16,18 @@ defmodule Cinder.Template.Helpers.Block do
 
   def block_if(0, opts) do
     if Keyword.get(opts, :includeZero) == true do
-      ~B"{{yield 'positive'}}"
+      ~HB"{{yield 'positive'}}"
     else
-      ~B"{{yield 'negative'}}"
+      ~HB"{{yield 'negative'}}"
     end
   end
 
   def block_if(condition, opts) when condition in @falsy do
-    ~B"{{yield 'negative'}}"
+    ~HB"{{yield 'negative'}}"
   end
 
   def block_if(condition, opts) do
-    ~B"{{yield 'positive'}}"
+    ~HB"{{yield 'positive'}}"
   end
 
   @doc """
@@ -38,18 +38,18 @@ defmodule Cinder.Template.Helpers.Block do
 
   def block_unless(0, opts) do
     if Keyword.get(opts, :includeZero) == true do
-      ~B"{{yield 'negative'}}"
+      ~HB"{{yield 'negative'}}"
     else
-      ~B"{{yield 'positive'}}"
+      ~HB"{{yield 'positive'}}"
     end
   end
 
   def block_unless(condition, opts) when condition in @falsy do
-    ~B"{{yield 'positive'}}"
+    ~HB"{{yield 'positive'}}"
   end
 
   def block_unless(condition, opts) do
-    ~B"{{yield 'negative'}}"
+    ~HB"{{yield 'negative'}}"
   end
 
   @doc """
@@ -60,7 +60,7 @@ defmodule Cinder.Template.Helpers.Block do
 
   def each(collection, [local]) do
     Enum.map(collection, fn element ->
-      ~B"{{yield 'positive'}}"
+      ~HB"{{yield 'positive'}}"
       |> LocalCompose.init([{local, element}])
     end)
   end

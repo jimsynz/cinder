@@ -15,13 +15,13 @@ defmodule Cinder.TemplateTest do
 
   use Cinder.Template
 
-  describe "sigil_B/2" do
+  describe "sigil_HB/2" do
     defmodule SigilTemplate do
       @moduledoc false
       use Cinder.Template
 
       def render do
-        ~B"""
+        ~HB"""
         <div id="example-template">
           <h1 class={{@class_assign}}>
             {{@heading_assign}}
@@ -36,7 +36,7 @@ defmodule Cinder.TemplateTest do
       end
 
       def contrived_example(arg) do
-        ~B"""
+        ~HB"""
         <div>
           {{#if arg}}
             {{yield "positive"}}
@@ -104,49 +104,49 @@ defmodule Cinder.TemplateTest do
 
   describe "expressions" do
     test "when an assign is present, it is interpreted into the template" do
-      assert execute(~B"{{@whom}}", assigns(whom: "Marty McFly")) =~ ~r/Marty\ McFly/
+      assert execute(~HB"{{@whom}}", assigns(whom: "Marty McFly")) =~ ~r/Marty\ McFly/
     end
 
     test "when an assign is missing, it raises a template error" do
       assert_raise(UnknownAssignError, fn ->
-        execute(~B"{{@whom}}")
+        execute(~HB"{{@whom}}")
       end)
     end
 
     test "when the expression contains potential XSS it is escaped" do
-      assert execute(~B"{{@whom}}", assigns(whom: "<h1>Marty McFly</h1>")) =~
+      assert execute(~HB"{{@whom}}", assigns(whom: "<h1>Marty McFly</h1>")) =~
                "&lt;h1&gt;Marty McFly&lt;/h1&gt;"
     end
 
     test "expressions in attributes are escaped" do
-      assert execute(~B"<h1 class={{@class}}>Marty</h1>", assigns(class: "<bigly>")) =~
+      assert execute(~HB"<h1 class={{@class}}>Marty</h1>", assigns(class: "<bigly>")) =~
                "<h1 class=\"&lt;bigly&gt;\">Marty</h1>"
     end
 
     test "when the expression contains XSS but is in a triple-stash, it is not escaped" do
-      assert execute(~B"{{{@whom}}}", assigns(whom: "<h1>Marty McFly</h1>")) =~
+      assert execute(~HB"{{{@whom}}}", assigns(whom: "<h1>Marty McFly</h1>")) =~
                "<h1>Marty McFly</h1>"
     end
 
     test "when an local is present, it is interpreted into the template" do
-      assert execute(~B"{{whom}}", assigns(), assigns(), assigns(whom: "Marty McFly")) =~
+      assert execute(~HB"{{whom}}", assigns(), assigns(), assigns(whom: "Marty McFly")) =~
                ~r/Marty\ McFly/
     end
 
     test "when a local is missing, it raises a template error" do
       assert_raise(UnknownLocalError, fn ->
-        execute(~B"{{whom}}")
+        execute(~HB"{{whom}}")
       end)
     end
 
     test "paths with assigns at the root can be traversed" do
-      assert execute(~B"{{@who.are.you}}", assigns(who: %{are: %{you: "Marty McFly"}})) =~
+      assert execute(~HB"{{@who.are.you}}", assigns(who: %{are: %{you: "Marty McFly"}})) =~
                ~r/Marty\ McFly/
     end
 
     test "paths with locals at the root can be traversed" do
       assert execute(
-               ~B"{{who.are.you}}",
+               ~HB"{{who.are.you}}",
                assigns(),
                assigns(),
                assigns(who: %{are: %{you: "Marty McFly"}})
@@ -155,17 +155,17 @@ defmodule Cinder.TemplateTest do
     end
 
     test "paths with missing intermediaries raise an error" do
-      assert_raise(IndexError, fn -> execute(~B"{{@who.are.you}}", assigns(who: %{})) end)
+      assert_raise(IndexError, fn -> execute(~HB"{{@who.are.you}}", assigns(who: %{})) end)
     end
 
     test "paths with integer indexes can be traversed" do
-      assert execute(~B"{{@who.[1].name}}", assigns(who: [%{name: "Marty"}, %{name: "Doc"}])) =~
+      assert execute(~HB"{{@who.[1].name}}", assigns(who: [%{name: "Marty"}, %{name: "Doc"}])) =~
                ~r/Doc/
     end
 
     test "paths with string indexes can be traversed" do
       assert execute(
-               ~B'{{@who.[1].["name"]}}',
+               ~HB'{{@who.[1].["name"]}}',
                assigns(who: [%{"name" => "Marty"}, %{"name" => "Doc"}])
              ) =~
                ~r/Doc/
@@ -173,7 +173,7 @@ defmodule Cinder.TemplateTest do
 
     test "literals" do
       result =
-        execute(~B"""
+        execute(~HB"""
         {{123}}
         {{456.789}}
         {{true}}
@@ -193,69 +193,69 @@ defmodule Cinder.TemplateTest do
 
   describe "built-in block helpers" do
     test "the `if` built in block helper works when the expression is true" do
-      assert execute(~B"{{#if true}}TRUE{{else}}FALSE{{/if}}") =~ ~r/TRUE/
+      assert execute(~HB"{{#if true}}TRUE{{else}}FALSE{{/if}}") =~ ~r/TRUE/
     end
 
     test "the `if` built in block helper works when the expression is truthy" do
-      assert execute(~B"{{#if 'true'}}TRUE{{else}}FALSE{{/if}}") =~ ~r/TRUE/
+      assert execute(~HB"{{#if 'true'}}TRUE{{else}}FALSE{{/if}}") =~ ~r/TRUE/
     end
 
     test "the `if` built in block helper works when the expression is null" do
-      assert execute(~B"{{#if null}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#if null}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
     end
 
     test "the `if` built in block helper works when the expression is undefined" do
-      assert execute(~B"{{#if undefined}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#if undefined}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
     end
 
     test "the `if` built in block helper works when the expression is false" do
-      assert execute(~B"{{#if false}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#if false}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
     end
 
     test "the `if` built in block helper works when the expression is an empty string" do
-      assert execute(~B"{{#if ''}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#if ''}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
     end
 
     test "the `if` built in block helper works when the expression is an empty array" do
-      assert execute(~B"{{#if @empty}}TRUE{{else}}FALSE{{/if}}", assigns(empty: [])) =~ ~r/FALSE/
+      assert execute(~HB"{{#if @empty}}TRUE{{else}}FALSE{{/if}}", assigns(empty: [])) =~ ~r/FALSE/
     end
 
     test "the `if` built in block helper works when the expression is a 0" do
-      assert execute(~B"{{#if 0}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#if 0}}TRUE{{else}}FALSE{{/if}}") =~ ~r/FALSE/
     end
 
     test "the `if` built in block helper works when the expression is a 0 and includeZero is set to true" do
-      assert execute(~B"{{#if 0 includeZero=true}}TRUE{{else}}FALSE{{/if}}") =~ ~r/TRUE/
+      assert execute(~HB"{{#if 0 includeZero=true}}TRUE{{else}}FALSE{{/if}}") =~ ~r/TRUE/
     end
 
     test "the `unless` built in block helper works when the expression is true" do
-      assert execute(~B"{{#unless true}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#unless true}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/FALSE/
     end
 
     test "the `unless` built in block helper works when the expression is truthy" do
-      assert execute(~B"{{#unless 'true'}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/FALSE/
+      assert execute(~HB"{{#unless 'true'}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/FALSE/
     end
 
     test "the `unless` built in block helper works when the expression is null" do
-      assert execute(~B"{{#unless null}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/TRUE/
+      assert execute(~HB"{{#unless null}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/TRUE/
     end
 
     test "the `unless` built in block helper works when the expression is undefined" do
-      assert execute(~B"{{#unless undefined}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/TRUE/
+      assert execute(~HB"{{#unless undefined}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/TRUE/
     end
 
     test "the `unless` built in block helper works when the expression is false" do
-      assert execute(~B"{{#unless false}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/TRUE/
+      assert execute(~HB"{{#unless false}}TRUE{{else}}FALSE{{/unless}}") =~ ~r/TRUE/
     end
 
     test "the `each` built in helper renders the nested block" do
-      assert execute(~B"{{#each @count}}{{this}},{{/each}}", assigns(count: [1, 2, 3])) =~
+      assert execute(~HB"{{#each @count}}{{this}},{{/each}}", assigns(count: [1, 2, 3])) =~
                ~r/1,2,3/
     end
 
     test "the `each` built in helper can use a named binding" do
       assert execute(
-               ~B"{{#each @count as |count|}}{{count}},{{/each}}",
+               ~HB"{{#each @count as |count|}}{{count}},{{/each}}",
                assigns(count: [1, 2, 3])
              ) =~
                ~r/1,2,3/
@@ -268,7 +268,7 @@ defmodule Cinder.TemplateTest do
       use Cinder.Component
 
       def render do
-        ~B"""
+        ~HB"""
         <div>
           {{#if (has_slot "default")}}
             {{yield "default"}}
@@ -285,7 +285,7 @@ defmodule Cinder.TemplateTest do
       use Cinder.Component
 
       def render do
-        ~B"""
+        ~HB"""
         <div>
           <BasicComponent>Yielded by basic component</BasicComponent>
         </div>
@@ -294,25 +294,25 @@ defmodule Cinder.TemplateTest do
     end
 
     test "void components with no arguments" do
-      assert execute(~B"<BasicComponent />") =~ ~r/Basic component/
+      assert execute(~HB"<BasicComponent />") =~ ~r/Basic component/
     end
 
     test "component with no contents" do
-      assert execute(~B"<BasicComponent></BasicComponent>") =~ ~r/Basic component/
+      assert execute(~HB"<BasicComponent></BasicComponent>") =~ ~r/Basic component/
     end
 
     test "component with named slot" do
-      assert execute(~B"<BasicComponent><:default>Named slot</:default></BasicComponent>") =~
+      assert execute(~HB"<BasicComponent><:default>Named slot</:default></BasicComponent>") =~
                ~r/Named slot/
     end
 
     test "component with implicit slot" do
-      assert execute(~B"<BasicComponent>Implicit slot</BasicComponent>") =~
+      assert execute(~HB"<BasicComponent>Implicit slot</BasicComponent>") =~
                ~r/Implicit slot/
     end
 
     test "nested components" do
-      assert execute(~B"<NestedComponents />") =~ ~r/Yielded by basic component/
+      assert execute(~HB"<NestedComponents />") =~ ~r/Yielded by basic component/
     end
   end
 

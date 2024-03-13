@@ -8,8 +8,9 @@ defmodule Cinder.Template.Macros do
   @doc """
   Compile an inline template into the current module.
   """
-  @spec sigil_B({:<<>>, keyword, [binary]}, [atom]) :: Macro.t()
-  defmacro sigil_B({:<<>>, meta, [template]}, _) do
+  @spec sigil_HB({:<<>>, keyword, [binary]}, [atom]) :: Macro.t()
+  # credo:disable-for-next-line Credo.Check.Readability.FunctionNames
+  defmacro sigil_HB({:<<>>, meta, [template]}, _) do
     line = Keyword.get(meta, :line, 1)
     column = Keyword.get(meta, :column, 1)
     compiled = Compiler.compile(template, __CALLER__, __CALLER__.file, line, column)

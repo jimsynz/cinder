@@ -24,7 +24,7 @@ defmodule Cinder.Components.Link do
       trim? true
     end
 
-    event :click, ~t"""
+    event :click, ~TS"""
       let uri = this.getAttribute('href');
 
       if (uri?.startsWith("/")) {
@@ -37,7 +37,7 @@ defmodule Cinder.Components.Link do
   @doc false
   @spec render :: Cinder.Template.Render.t()
   def render do
-    ~B"""
+    ~HB"""
     <a href={{@to}} class={{@class}} aria-current={{aria_current @request @to}}>{{yield}}</a>
     """
   end

@@ -4,8 +4,8 @@ defmodule Cinder.Component.Script do
 
   Used the component event DSL.
 
-  To add a fragment of JavaScript code use the `~j` sigil, or for TypeScript use
-  the `~t` sigil.
+  To add a fragment of JavaScript code use the `~JS` sigil, or for TypeScript use
+  the `~TS` sigil.
   """
 
   defstruct lang: :javascript, script: nil
@@ -14,11 +14,13 @@ defmodule Cinder.Component.Script do
 
   @type t :: %Script{lang: :javascript | :typescript, script: binary}
 
-  @doc false
-  @spec sigil_j(binary, atom) :: t
-  def sigil_j(script, _), do: %Script{lang: :javascript, script: script}
+  # credo:disable-for-this-file Credo.Check.Readability.FunctionNames
 
   @doc false
-  @spec sigil_t(binary, atom) :: t
-  def sigil_t(script, _), do: %Script{lang: :typescript, script: script}
+  @spec sigil_JS(binary, atom) :: t
+  def sigil_JS(script, _), do: %Script{lang: :javascript, script: script}
+
+  @doc false
+  @spec sigil_TS(binary, atom) :: t
+  def sigil_TS(script, _), do: %Script{lang: :typescript, script: script}
 end

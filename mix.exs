@@ -94,7 +94,7 @@ defmodule Cinder.MixProject do
 
   defp deps do
     [
-      {:ip, "~> 2.0 and >= 2.0.1"},
+      {:ip, ">= 2.0.1 and < 3.0.0"},
       {:jason, "~> 1.4"},
       {:phoenix_pubsub, "~> 2.1"},
       {:plug, "~> 1.14"},

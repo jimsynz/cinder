@@ -1,4 +1,8 @@
 defmodule Cinder.Component do
+  @moduledoc """
+  A Cinder component.
+  """
+
   alias Cinder.{
     Component.Dsl,
     Errors.Component.PropertyValidationError,
@@ -9,21 +13,7 @@ defmodule Cinder.Component do
     Template.SlotStack
   }
 
-  alias Spark.{CheatSheet, Dsl.Extension, Options, Options.ValidationError}
-
-  @moduledoc """
-  A Cinder component.
-
-  ## DSL Documentation
-
-  ### Index
-
-  #{CheatSheet.doc_index(Dsl.dsl())}
-
-  ### Docs
-
-  #{CheatSheet.doc(Dsl.dsl())}
-  """
+  alias Spark.{Dsl.Extension, Options, Options.ValidationError}
 
   use Spark.Dsl, default_extensions: [extensions: Dsl]
 

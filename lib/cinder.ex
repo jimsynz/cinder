@@ -1,20 +1,9 @@
 defmodule Cinder do
-  alias Cinder.Dsl
-
   @moduledoc """
   The Cinder web application server.
-
-  ## DSL Documentation
-
-  ### Index
-
-  #{Spark.CheatSheet.doc_index(Dsl.dsl())}
-
-  ### Docs
-
-  #{Spark.CheatSheet.doc(Dsl.dsl())}
   """
 
+  alias Cinder.Dsl
   use Spark.Dsl, default_extensions: [extensions: [Dsl]]
 
   @type app :: module

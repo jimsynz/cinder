@@ -100,6 +100,7 @@ defmodule Cinder.MixProject do
       {:plug, "~> 1.14"},
       {:plug_cowboy, "~> 2.6"},
       {:spark, "== 2.0.1"},
+      {:table_rex, "~> 4.0"},
 
       # dev/test
       {:credo, "~> 1.6", only: ~w[dev test]a, runtime: false},

@@ -63,4 +63,9 @@ defmodule Cinder.Dsl.Info do
     |> Extension.get_persisted(:cinder_route_map)
     |> Map.keys()
   end
+
+  @doc "Get the configured template path"
+  @spec app_template_path(dsl_or_app) :: Path.t()
+  def app_template_path(dsl_or_app),
+    do: Extension.get_persisted(dsl_or_app, :cinder_template_base_path)
 end

@@ -21,8 +21,13 @@ defmodule Mix.Tasks.Cinder.Routes do
       Mix.raise("Unexpected arguments: #{Enum.map_join(args, ", ", &"`#{&1}`")}")
     end
 
-    opts
-    |> Keyword.get(:app)
+    app = Keyword.get(opts, :app)
+
+    unless app do
+      Mix.raise("Required argument `app` is missing")
+    end
+
+    app
     |> String.split(~r/\,\s*/)
     |> Enum.each(fn module ->
       module = Module.concat([module])

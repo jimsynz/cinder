@@ -99,7 +99,7 @@ defmodule Cinder.MixProject do
       {:phoenix_pubsub, "~> 2.1"},
       {:plug, "~> 1.14"},
       {:plug_cowboy, "~> 2.6"},
-      {:spark, "== 2.0.1"},
+      {:spark, "== 2.1.0"},
       {:table_rex, "~> 4.0"},
 
       # dev/test

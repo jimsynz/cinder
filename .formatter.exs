@@ -9,6 +9,8 @@ spark_locals_without_parens = [
   event: 2,
   event: 3,
   listen_port: 1,
+  name: 1,
+  options: 1,
   plug: 1,
   plug: 2,
   plug: 3,
